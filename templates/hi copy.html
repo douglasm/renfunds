@@ -1,0 +1,29 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_8">
+        <h3>Renfunds Login</h3>
+    </div>
+</div>
+
+<div class="row">
+    {{template "logininsert.html" .Details}}
+</div>
+<div class="row">
+    <div class="grid_8">
+        <h1>Are you {{.Farty}}</h1>
+        <h2>{{.User.Name}}</h2>
+        <h2>{{.User.Num}}</h2>
+        <h2>
+        {{range $element := .User.Towns}}
+            {{$element}}<br />
+        {{end}}
+        </h2>
+        <h3>{{.User.Towns}}</h3>
+    </div>
+</div>
+</body>
+</html>

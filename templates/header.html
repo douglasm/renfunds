@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-type" content="application/json; charset=UTF-8">
+  <link rel="stylesheet" href="/css/ssafa.css">
+  <title>{{.Title}}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" type="image/x-icon" href="./images/favicon.ico">
+  <link href='http://fonts.googleapis.com/css?family=Droid+Serif:700,400,400italic,700italic' rel='stylesheet' type='text/css'>
+  <meta name="distribution" content="global"/>
+  <meta name="resource-type" content="document"/>
+
+  <!--[if IE]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  {{range $element := .Scripts}}
+    <script type="text/javascript" src="/js/{{$element}}.js"></script>
+  {{end}}
+</head>
+

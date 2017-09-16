@@ -1,0 +1,47 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <div class="row">
+            <div class="grid_9">
+                <h3>Renfunds Clients</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-hide="phone">
+                                Case Number
+                            </th>
+                            <th data-class="expand">
+                                First Name
+                            </th>
+                            <th>
+                                Surname
+                            </th>
+                            <th>
+                                Service
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range $element := .Details}}
+                            <tr>
+                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.Case}}</a></td>
+                                <td align="left">{{$element.First}}</td>
+                                <td align="left">{{$element.Surname}}</td>
+                                <td align="left">{{$element.Service}}</td>
+                            </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div> <!-- end of grid_9 -->
+            {{template "clientsearch.html" .}}
+        </div> <!-- end of row -->
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>
