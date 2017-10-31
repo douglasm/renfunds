@@ -10,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"ssafa/cookie"
 	"ssafa/crypto"
 	"ssafa/db"
 	"ssafa/types"
@@ -34,7 +35,9 @@ func login(ctx iris.Context) {
 		err          error
 	)
 	user := User{Name: "Albert Einstein", Towns: []string{"London", "Manchester", "Paris"}, Num: 65}
-	fmt.Println(ctx.Value("fred"))
+	// fmt.Println(ctx.Value("fred"))
+	theSession = ctx.Values().Get("session").(Session)
+	fmt.Printf("%+v\n", theSession)
 	header := types.HeaderRecord{Title: "Renfunds login"}
 	header.Scripts = append(header.Scripts, "passwordtoggle")
 
@@ -71,9 +74,9 @@ func login(ctx iris.Context) {
 									break
 								}
 							}
-							cookie := http.Cookie{Name: "session", Value: cookieString}
+							theCookie := http.Cookie{Name: "session", Value: cookieString}
 							if details.Remember {
-								cookie.Expires = time.Now().Add(31 * 24 * time.Hour)
+								theCookie.Expires = time.Now().Add(31 * 24 * time.Hour)
 							}
 							theSession.Id = cookieString
 							theSession.UserNumber = theUser.Id
@@ -81,8 +84,9 @@ func login(ctx iris.Context) {
 							theSession.LoggedIn = true
 							err = sessionCollection.Insert(&theSession)
 							fmt.Println("Session save", err)
-							ctx.SetCookie(&cookie)
+							ctx.SetCookie(&theCookie)
 							ctx.Redirect("/", http.StatusFound)
+							cookie.MakeCookie(ctx)
 							return
 						}
 					}

@@ -8,11 +8,14 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/gorilla/securecookie"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/middleware/logger"
 	"gopkg.in/mgo.v2"
 
+	"ssafa/cases"
 	"ssafa/clients"
+	"ssafa/cookie"
 	"ssafa/crypto"
 	"ssafa/db"
 	"ssafa/types"
@@ -67,6 +70,7 @@ func main() {
 	parts := strings.Split(key, "|")
 	crypto.SetKey([]byte(parts[0]))
 	clients.SetKey([]byte(parts[0]))
+	cookie.SetVars(parts[2], parts[3])
 
 	f, _ := os.OpenFile("./logs/ssafa.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	defer f.Close()
@@ -82,6 +86,7 @@ func main() {
 	defer db.MongoSession.Close()
 	db.MongoSession.SetMode(mgo.Monotonic, true)
 
+	// generateKeys()
 	// f, _ := os.OpenFile("./logs/ssafa.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	// defer f.Close()
 
@@ -141,6 +146,8 @@ func main() {
 	app.Post("/", hi)
 
 	users.SetRoutes(app)
+	clients.SetRoutes(app)
+	cases.SetRoutes(app)
 
 	// http://localhost:9039
 	thePort := fmt.Sprintf(":%d", config.Port)
@@ -201,7 +208,6 @@ func authCheck(ctx iris.Context) {
 	fmt.Println("In authCheck", path)
 
 	theSession.ValidCookie(ctx.GetCookie("session"))
-	fmt.Printf("Authcheck: %+v\n", theSession)
 	ctx.Values().Set("logged", theSession.LoggedIn)
 	ctx.Values().Set("admin", theSession.Admin)
 	ctx.Values().Set("user", theSession.UserNumber)
@@ -241,17 +247,17 @@ func newRequestLogger() (h iris.Handler, close func() error) {
 		// Columns: true,
 	}
 
-	logFile := newLogFile()
-	close = func() error {
-		err := logFile.Close()
-		return err
-	}
+	// logFile := newLogFile()
+	// close = func() error {
+	// 	err := logFile.Close()
+	// 	return err
+	// }
 
 	c.LogFunc = func(now time.Time, latency time.Duration, status, ip, method, path string, message interface{}) {
 		// output := logger.Columnize(now.Format("2006/01/02 - 15:04:05"), latency, status, ip, method, path, message)
 		f := float64(latency)
 		f /= 1000000.0
-		output := fmt.Sprintf("%s %.3fms %s %s %s %s\n", now.Format("2006/01/02 - 15:04:05"), f, ip, status, method, path)
+		output := fmt.Sprintf("%s %.3fms %s %s %s %s", now.Format("2006/01/02 - 15:04:05"), f, ip, status, method, path)
 		//, latency, status, ip, method, path, message
 		// ctx.Application().Logger().Infof("Path: %s | IP: %s", ctx.Path(), ctx.RemoteAddr())
 		log.Println(output)
@@ -292,4 +298,13 @@ func ReadConfig() Config {
 		log.Println(err)
 	}
 	return config
+}
+
+func generateKeys() {
+	theBytes := securecookie.GenerateRandomKey(32)
+	if theBytes == nil {
+		fmt.Println("Bugger")
+		return
+	}
+	fmt.Printf("%x\n", theBytes)
 }

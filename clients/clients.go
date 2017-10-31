@@ -2,67 +2,98 @@ package clients
 
 import (
 	// "log"
+	// "fmt"
+	"html"
+	"html/template"
+	"net/http"
+	"sort"
 	"strings"
 
-	// "github.com/kataras/iris"
+	"github.com/kataras/iris"
 	// "gopkg.in/mgo.v2"
 
-	// "ssafa/crypto"
+	"ssafa/cases"
 	"ssafa/db"
+	"ssafa/types"
 )
 
 type (
-	Client struct {
-		Id          int    `bson:"_id"`
-		CaseNumber  string `bson:"case,omitempty"`
-		CMSId       string `bson:"cms,omitempty"`
-		VisitNumber string `bson:"visit,omitempty"`
-		DOB         int    `bson:"dob"`
-		Title       string `bson:"title,omitempty"`
-		First       string `bson:"first,omitempty"`
-		Surname     string `bson:"surname,omitempty"`
-		Letters     string `bson:"case,letters"`
-		Address     string `bson:"address,omitempty"`
-		// `address2` varchar(255) NOT NULL DEFAULT '',
-		// `address3` varchar(255) NOT NULL DEFAULT '',
-		// `address4` varchar(255) NOT NULL DEFAULT '',
-		PostCode string `bson:"postcode,omitempty"`
-		Phone    string `bson:"phone,omitempty"`
-		Mobile   string `bson:"mobile,omitempty"`
-		EMail    string `bson:"email,omitempty"`
-		NINum    string `bson:"ninum,omitempty"`
-		// `ni2` smallint(2) unsigned zerofill NOT NULL DEFAULT '00',
-		// `ni3` smallint(2) unsigned zerofill NOT NULL DEFAULT '00',
-		// `ni4` smallint(2) unsigned zerofill NOT NULL DEFAULT '00',
-		// `ni5` char(1) DEFAULT NULL,
-		ServiceNo string `bson:"serviceno,omitempty"`
-		Service   string `bson:"services,omitempty"`
-		Annuity   bool   `bson:"annuity,omitempty"`
-		Comments  string `bson:"comments,omitempty"`
-		Report    string `bson:"report,omitempty"`
-		CaseFirst string `bson:"casefirst,omitempty"`
-		CaseSurn  string `bson:"casesurn,omitempty"`
-		Based     string `bson:"based,omitempty"`
-		Closed    bool   `bson:"closed,omitempty"`
-		Shredded  bool   `bson:"shredded,omitempty"`
-	}
-
 	ClientShow struct {
 		Id      int
 		Case    string
 		First   string
 		Surname string
-		Service string
+		NiNum   string
 	}
 
 	ClientList []ClientShow
 
-	ByClientName struct{ ClientShow }
+	ClientDisplay struct {
+		Id       int
+		First    string
+		Surname  string
+		Phone    string
+		NiNum    string
+		Address  template.HTML
+		PostCode string
+		Comments []string
+		Reports  []string
+		Cases    []cases.CaseList
+	}
+
+	ByClientName struct{ ClientList }
 )
 
 var (
 	key []byte
 )
+
+func showClient(ctx iris.Context) {
+	var (
+		details   ClientDisplay
+		theClient db.Client
+		header    types.HeaderRecord
+		// theUser      db.User
+		clientNum int
+		err       error
+	)
+
+	clientNum, err = ctx.Params().GetInt("clientnum")
+	if err != nil {
+		ctx.Redirect("/clients", http.StatusFound)
+		return
+	}
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+
+	err = clientColl.FindId(clientNum).One(&theClient)
+
+	header.Title = "RF: Client"
+	details.First = theClient.First
+	details.Surname = theClient.Surname
+	tempStr := html.EscapeString(theClient.Address)
+	tempStr = strings.TrimSpace(tempStr)
+	tempStr = strings.Replace(theClient.Address, "\r", "<br />", -1)
+	if len(tempStr) > 0 {
+		tempStr += "<br />"
+	}
+	if len(theClient.PostCode) > 0 {
+		tempStr += theClient.PostCode + "<br />"
+	}
+	details.Address = template.HTML(tempStr)
+	details.PostCode = theClient.PostCode
+	details.Phone = theClient.Phone
+	details.Comments = theClient.Comments
+	details.Reports = theClient.Reports
+
+	details.Cases = cases.GetCases(theClient.Id)
+
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+	ctx.View("client.html")
+}
 
 func (s ClientList) Len() int {
 	return len(s)
@@ -73,16 +104,16 @@ func (s ClientList) Swap(i, j int) {
 }
 
 func (s ByClientName) Less(i, j int) bool {
-	if strings.ToLower(s.ClientShow[i].Surname) != strings.ToLower(s.ClientShow[j].Surname) {
-		return strings.ToLower(s.ClientShow[i].Surname) < strings.ToLower(s.ClientShow[j].Surname)
+	if strings.ToLower(s.ClientList[i].Surname) != strings.ToLower(s.ClientList[j].Surname) {
+		return strings.ToLower(s.ClientList[i].Surname) < strings.ToLower(s.ClientList[j].Surname)
 	}
-	return s.Organs[i].Weight < s.Organs[j].Weight
+	return strings.ToLower(s.ClientList[i].First) < strings.ToLower(s.ClientList[j].First)
 }
 
-func GetList(searchCategory, searchTerm string, offset int) ClientList {
+func GetList(searchCategory, searchTerm string, offset int) []ClientShow {
 	var (
-		theClient Client
-		theList   ClientList
+		theClient db.Client
+		theList   []ClientShow
 	)
 
 	session := db.MongoSession.Copy()
@@ -91,13 +122,15 @@ func GetList(searchCategory, searchTerm string, offset int) ClientList {
 
 	iter := clientColl.Find(nil).Sort("_id").Iter()
 	for iter.Next(&theClient) {
-		newClient := ClientShow{Id: theClient.Id, Case: theClient.CaseNumber}
+		newClient := ClientShow{Id: theClient.Id}
 		newClient.First = theClient.First
 		newClient.Surname = theClient.Surname
-		newClient.Service = theClient.Service
+		newClient.NiNum = theClient.NINum
 		theList = append(theList, newClient)
 	}
 	iter.Close()
+
+	sort.Sort(ByClientName{theList})
 
 	return theList
 }

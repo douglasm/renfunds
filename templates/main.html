@@ -11,9 +11,6 @@
                 <table>
                     <thead>
                         <tr>
-                            <th data-hide="phone">
-                                Case Number
-                            </th>
                             <th data-class="expand">
                                 First Name
                             </th>
@@ -21,17 +18,16 @@
                                 Surname
                             </th>
                             <th>
-                                Service
+                                NI Num
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         {{range $element := .Details}}
                             <tr>
-                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.Case}}</a></td>
-                                <td align="left">{{$element.First}}</td>
-                                <td align="left">{{$element.Surname}}</td>
-                                <td align="left">{{$element.Service}}</td>
+                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.First}}</a></td>
+                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.Surname}}</a></td>
+                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.NiNum}}</a></td>
                             </tr>
                         {{end}}
                     </tbody>
