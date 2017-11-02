@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"html/template"
 )
 
@@ -24,6 +25,13 @@ const (
 
 	KSortIdAscend  = "-_id"
 	KSortIdDescend = "_id"
+)
+
+const (
+	KFieldNavCount = 1 + iota
+	KFieldNavPage
+	KFieldNavLink
+	KFieldNavNext
 )
 
 type (
@@ -54,8 +62,6 @@ type (
 		PrevLink string
 		NextLink string
 	}
-
-	M map[int]interface{}
 
 	MenuRecord struct {
 		Current NavItem
@@ -104,6 +110,15 @@ type (
 		TextStyle    int
 		TextSize     int
 	}
+
+	SearchRecord struct {
+		SearchTerm string `schema:"search"`
+		SearchType string `schema:"stype"`
+	}
+
+	M  map[int]interface{}
+	MS map[string]interface{}
+	S  []MS
 )
 
 var (
@@ -143,4 +158,42 @@ func GetGeneralItem(ignoreItem string, inUK bool) []NavItem {
 		}
 	}
 	return theMenu
+}
+
+func (nr *NavButtonRecord) SetNavButtons(data M) {
+	nr.HasNav = false
+	nr.HasNext = false
+	nr.HasPrev = false
+
+	// count, ok := data[KFieldNavCount].(int)
+	// if !ok {
+	// 	return
+	// }
+
+	pageNumber, ok := data[KFieldNavPage].(int)
+	if !ok {
+		return
+	}
+
+	link, ok := data[KFieldNavLink].(string)
+	if !ok {
+		return
+	}
+
+	navNext, ok := data[KFieldNavNext].(bool)
+	if ok {
+		nr.HasNav = true
+		nr.HasNext = navNext
+		nr.NextLink = fmt.Sprintf("%s/%d", link, pageNumber+1)
+	}
+
+	if pageNumber > 0 {
+		nr.HasNav = true
+		nr.HasPrev = true
+		if pageNumber == 1 {
+			nr.PrevLink = link
+		} else {
+			nr.PrevLink = fmt.Sprintf("%s/%d", link, pageNumber-1)
+		}
+	}
 }

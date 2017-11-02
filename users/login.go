@@ -1,7 +1,8 @@
 package users
 
 import (
-	"fmt"
+	// "fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -37,13 +38,11 @@ func login(ctx iris.Context) {
 	user := User{Name: "Albert Einstein", Towns: []string{"London", "Manchester", "Paris"}, Num: 65}
 	// fmt.Println(ctx.Value("fred"))
 	theSession = ctx.Values().Get("session").(Session)
-	fmt.Printf("%+v\n", theSession)
 	header := types.HeaderRecord{Title: "Renfunds login"}
 	header.Scripts = append(header.Scripts, "passwordtoggle")
 
 	if ctx.Method() == "POST" {
 		data := ctx.FormValues()
-		fmt.Println(data)
 		err = decoder.Decode(&details, data)
 		if err == nil {
 			session := db.MongoSession.Copy()
@@ -53,11 +52,9 @@ func login(ctx iris.Context) {
 			sessionCollection := session.DB(db.MainDB).C(db.CollectionSessions)
 			err = usersCollection.Find(bson.M{db.KFieldUserUserName: details.Username}).One(&theUser)
 			if err == nil {
-				fmt.Printf("The User %+v\n", theUser)
 				thePassword, err := crypto.GetHash(details.Password, theUser.Salt)
 				if err == nil {
 					if len(thePassword) == len(theUser.Password) {
-						fmt.Println("we have a len match")
 						failed := false
 						for i := 0; i < len(thePassword); i++ {
 							if thePassword[i] != theUser.Password[i] {
@@ -65,8 +62,6 @@ func login(ctx iris.Context) {
 							}
 						}
 						if !failed {
-							fmt.Println("we have a match")
-
 							for true {
 								cookieString = crypto.RandomChars(16)
 								err = sessionCollection.FindId(cookieString).One(&theSession)
@@ -83,7 +78,7 @@ func login(ctx iris.Context) {
 							theSession.Admin = theUser.Admin
 							theSession.LoggedIn = true
 							err = sessionCollection.Insert(&theSession)
-							fmt.Println("Session save", err)
+
 							ctx.SetCookie(&theCookie)
 							ctx.Redirect("/", http.StatusFound)
 							cookie.MakeCookie(ctx)
@@ -93,9 +88,8 @@ func login(ctx iris.Context) {
 				}
 			}
 		} else {
-			fmt.Println(err)
+			log.Println(err)
 		}
-		fmt.Printf("%+v\n", details)
 
 	}
 	details.Checkfield = crypto.MakeNonce(KLoginForm, "noone")

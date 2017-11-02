@@ -42,6 +42,7 @@ const (
 	KFieldClientsNiNum    = "ninum"
 	KFieldClientsComments = "comments"
 	KFieldClientsReports  = "report"
+	KFieldClientsOrder    = "order"
 )
 
 const (

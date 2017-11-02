@@ -1,7 +1,7 @@
 package users
 
 import (
-	"fmt"
+	// "fmt"
 	// "strings"
 	// "github.com/gorilla/schema"
 	// "github.com/kataras/iris"
@@ -15,8 +15,6 @@ import (
 )
 
 func (sr *Session) ValidCookie(value string) bool {
-	fmt.Println("ValidCookie:", value)
-
 	session := db.MongoSession.Copy()
 	defer session.Close()
 

@@ -158,25 +158,25 @@ func hi(ctx iris.Context) {
 	var (
 		header types.HeaderRecord
 	)
-	fmt.Println("hi cookie is:", ctx.GetCookie("session"))
-	userNumber, _ := ctx.Values().GetInt("user")
-	fmt.Println(ctx.Values())
-	fmt.Println(ctx.Values().Get("logged"))
-	fmt.Println(ctx.Values().Get("user"))
-	fmt.Println(ctx.Values().Get("admin"))
-	fmt.Println(ctx.Values().Get("session"))
+	// userNumber, _ := ctx.Values().GetInt("user")
+	// fmt.Println(ctx.Values())
+	// fmt.Println(ctx.Values().Get("logged"))
+	// fmt.Println(ctx.Values().Get("user"))
+	// fmt.Println(ctx.Values().Get("admin"))
+	// fmt.Println(ctx.Values().Get("session"))
 	theSession := ctx.Values().Get("session")
 	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 	// theSession := sessionVal.(users.Session)
-	fmt.Println(header.Loggedin, "vs", userNumber)
+	// fmt.Println(header.Loggedin, "vs", userNumber)
 	if !header.Loggedin {
 		user := users.User{Name: "Albert Einstein", Towns: []string{"London", "Manchester", "Paris"}, Num: 65}
-		fmt.Println("No session set")
+		// fmt.Println("No session set")
 		// }
 		// if !theSession.LoggedIn {
 		header.Title = "RF: Login"
-		details := users.LoginRecord{Username: "mccallum_ir", Password: "bowpa1132"}
+		// details := users.LoginRecord{Username: "mccallum_ir", Password: "bowpa1132"}
+		details := users.LoginRecord{}
 		ctx.ViewData("User", user)
 		ctx.ViewData("Details", details)
 		ctx.ViewData("Header", header)
@@ -184,9 +184,9 @@ func hi(ctx iris.Context) {
 		return
 	}
 
-	fmt.Println("We are logged in")
+	// fmt.Println("We are logged in")
 	header.Title = "RF: Clients"
-	clientList := clients.GetList("", "", 0)
+	clientList, _ := clients.GetList("", "", 0)
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", clientList)
 	ctx.View("main.html")
@@ -205,7 +205,7 @@ func authCheck(ctx iris.Context) {
 		}
 	}
 
-	fmt.Println("In authCheck", path)
+	// fmt.Println("In authCheck", path)
 
 	theSession.ValidCookie(ctx.GetCookie("session"))
 	ctx.Values().Set("logged", theSession.LoggedIn)
@@ -214,27 +214,27 @@ func authCheck(ctx iris.Context) {
 	ctx.Values().Set("session", theSession)
 
 	if ctx.Method() == "POST" {
-		fmt.Println("checking a post")
-		nonceString := ctx.FormValue("checkfield")
-		fmt.Println(nonceString)
-		if !crypto.CheckNonce(nonceString) {
-			fmt.Println("Failed nonce")
-		}
+		// fmt.Println("checking a post")
+		// nonceString := ctx.FormValue("checkfield")
+		// fmt.Println(nonceString)
+		// if !crypto.CheckNonce(nonceString) {
+		// 	fmt.Println("Failed nonce")
+		// }
 	}
 
 	ctx.Values().Set("fred", "Hello there")
 	ctx.Next()
 }
 
-func newLogFile() *os.File {
-	filename := "logs/ssafa2.log"
-	f, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		panic(err)
-	}
+// func newLogFile() *os.File {
+// 	filename := "logs/ssafa2.log"
+// 	f, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	return f
-}
+// 	return f
+// }
 
 func newRequestLogger() (h iris.Handler, close func() error) {
 	close = func() error { return nil }
@@ -303,8 +303,8 @@ func ReadConfig() Config {
 func generateKeys() {
 	theBytes := securecookie.GenerateRandomKey(32)
 	if theBytes == nil {
-		fmt.Println("Bugger")
+		// fmt.Println("Bugger")
 		return
 	}
-	fmt.Printf("%x\n", theBytes)
+	// fmt.Printf("%x\n", theBytes)
 }

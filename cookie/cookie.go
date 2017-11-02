@@ -2,7 +2,6 @@ package cookie
 
 import (
 	"encoding/hex"
-	"fmt"
 
 	"github.com/gorilla/securecookie"
 	"github.com/kataras/iris"
@@ -28,21 +27,9 @@ var (
 )
 
 func SetVars(hk, bk string) {
-	var (
-		err error
-	)
+	hashKey, _ = hex.DecodeString(hk)
 
-	hashKey, err = hex.DecodeString(hk)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(hashKey)
-
-	blockKey, err = hex.DecodeString(bk)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(bk)
+	blockKey, _ = hex.DecodeString(bk)
 	sc = securecookie.New(hashKey, blockKey)
 }
 

@@ -2,7 +2,8 @@ package cases
 
 import (
 	// "log"
-	"fmt"
+	// "fmt"
+	"net/http"
 	// "sort"
 	// "strings"
 
@@ -15,50 +16,67 @@ import (
 	"ssafa/types"
 )
 
+type (
+	CaseDisplay struct {
+		ClientName string
+		ClientNum  int
+		Reports    []string
+		Comments   []string
+	}
+)
+
 func showCase(ctx iris.Context) {
 	var (
-		details CaseDisplay
-		theCase db.Case
-		header  types.HeaderRecord
-		caseNum int
-		err     error
+		details   CaseDisplay
+		theCase   db.Case
+		theClient db.Client
+		header    types.HeaderRecord
+		caseNum   int
+		err       error
 	)
 
 	caseNum, err = ctx.Params().GetInt("casenum")
 	if err != nil {
-		ctx.Redirect("/clients", http.StatusFound)
+		ctx.Redirect("/cases", http.StatusFound)
 		return
 	}
 
 	session := db.MongoSession.Copy()
 	defer session.Close()
+
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
 	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
 
 	err = caseColl.FindId(caseNum).One(&theCase)
+	if err != nil {
+		ctx.Redirect("/cases", http.StatusFound)
+		return
+	}
+	err = clientColl.FindId(theCase.ClientNum).One(&theClient)
 
-	header.Title = "RF: Case"
-	details.First = theClient.First
-	details.Surname = theClient.Surname
-	tempStr := html.EscapeString(theClient.Address)
-	tempStr = strings.TrimSpace(tempStr)
-	tempStr = strings.Replace(theClient.Address, "\r", "<br />", -1)
-	if len(tempStr) > 0 {
-		tempStr += "<br />"
-	}
-	if len(theClient.PostCode) > 0 {
-		tempStr += theClient.PostCode + "<br />"
-	}
-	details.Address = template.HTML(tempStr)
-	details.PostCode = theClient.PostCode
-	details.Phone = theClient.Phone
+	header.Title = "RF: Case " + theCase.CaseNumber
+	details.ClientName = theClient.First + " " + theClient.Surname + " " + theCase.CaseNumber
+	// tempStr := html.EscapeString(theClient.Address)
+	// tempStr = strings.TrimSpace(tempStr)
+	// tempStr = strings.Replace(theClient.Address, "\r", "<br />", -1)
+	// if len(tempStr) > 0 {
+	// 	tempStr += "<br />"
+	// }
+	// if len(theClient.PostCode) > 0 {
+	// 	tempStr += theClient.PostCode + "<br />"
+	// }
+	// details.Address = template.HTML(tempStr)
+	// details.PostCode = theClient.PostCode
+	// details.Phone = theClient.Phone
+	details.ClientNum = theClient.Id
 	details.Comments = theClient.Comments
 	details.Reports = theClient.Reports
 
-	details.Cases = cases.GetCases(theClient.Id)
+	// details.Cases = cases.GetCases(theClient.Id)
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
-	ctx.View("client.html")
+	ctx.View("case.html")
 }
 
 func GetCases(clientNumber int) []CaseList {
@@ -73,7 +91,6 @@ func GetCases(clientNumber int) []CaseList {
 
 	iter := caseColl.Find(bson.M{db.KFieldCaseClientNum: clientNumber}).Sort("_id").Iter()
 	for iter.Next(&theCase) {
-		fmt.Printf("%+v\n", theCase)
 		newCase := CaseList{CaseNumber: theCase.CaseNumber, CaseWorker: theCase.CaseFirst + " " + theCase.CaseSurname}
 		newCase.Id = theCase.Id
 		if theCase.Closed {

@@ -7,24 +7,7 @@
     <div class="grid_12">
         <div class="row">
             <div class="grid_9">
-                <h4>{{.Details.First}} {{.Details.Surname}}</h4>
-                {{.Details.Address}}
-                <table>
-                    <thead>
-                        <th>Case number</th>
-                        <th>Case Worker</th>
-                        <th>State</th>
-                    </thead>
-                    <tbody>
-                        {{range $element := .Details.Cases}}
-                            <tr>
-                                <td align="left"><a href="/case/{{$element.Id}}">{{$element.CaseNumber}}</a></td>
-                                <td align="left">{{$element.CaseWorker}}</td>
-                                <td align="left">{{$element.State}}</td>
-                            </tr>
-                        {{end}}
-                    </tbody>
-                </table>
+                <h4><a href="/client/{{.Details.ClientNum}}">{{.Details.ClientName}}</a></h4>
                 {{range $element := .Details.Reports}}
                     {{$element}}<br />
                 {{end}}

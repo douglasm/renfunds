@@ -1,0 +1,49 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <div class="row">
+            <div class="grid_9">
+                <h3>Renfunds Clients</h3>
+                {{if .NavButtons.HasNav}}
+                  {{template "navbuttons.html" .NavButtons}}
+                {{end}}
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-class="expand">
+                                First Name
+                            </th>
+                            <th>
+                                Surname
+                            </th>
+                            <th>
+                                NI Num
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range $element := .Details}}
+                            <tr>
+                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.First}}</a></td>
+                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.Surname}}</a></td>
+                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.NiNum}}</a></td>
+                            </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                {{if .NavButtons.HasNav}}
+                  {{template "navbuttons.html" .NavButtons}}
+                {{end}}
+            </div> <!-- end of grid_9 -->
+            {{template "clientsearch.html" .}}
+        </div> <!-- end of row -->
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+<div class="navbuttons">
+    {{if .HasPrev}}
+        <a href="/{{.PrevLink}}" class="button icon arrowleft">Previous page</a>
+    {{end}}
+    {{if .HasNext}}
+        <a href="/{{.NextLink}}" class="button icon arrowright">Next page</a>
+    {{end}}
+</div>

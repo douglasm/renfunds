@@ -161,28 +161,22 @@ func CheckNonce(nonce string) bool {
 
 	theString := getNonceString(newString)
 	if parts[0] != theString {
-		fmt.Println("Did not match")
 		return false
 	}
 
 	nonceParts := strings.Split(parts[1], ",")
-	fmt.Println(len(nonceParts), nonceParts)
-	fmt.Println(nonceParts[3])
-	fmt.Println(nonceParts[4])
 	timeCreated, err = strconv.ParseInt(nonceParts[3], 10, 64)
 	timeDiff, err = strconv.ParseInt(nonceParts[4], 10, 64)
+	if err != nil {
+		return false
+	}
 	secs := time.Now().Unix()
 	diff := secs - timeCreated
-	if err != nil {
-		fmt.Println("Conversion error")
+
+	if diff > timeDiff {
 		return false
 	}
-	fmt.Println(secs, timeCreated, diff, timeDiff)
-	if diff > 3600 {
-		fmt.Println("elapsed too long")
-		return false
-	}
-	fmt.Println("Nonce is good")
+
 	return true
 }
 
@@ -204,7 +198,6 @@ func getNonceString(theString string) string {
 	h := hmac.New(sha256.New, nonceKey)
 	h.Write([]byte(theString))
 	nonceString := fmt.Sprintf("%x", h.Sum(nil))
-	fmt.Println("make nonce ", nonceString)
 	return nonceString
 }
 
