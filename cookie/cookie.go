@@ -10,10 +10,14 @@ import (
 
 type (
 	Cookie struct {
-		User  int    `json:"num"`
-		Admin bool   `json:"admin"`
-		God   bool   `json:"god"`
-		Auth  []byte `json:"auth"`
+		User             int    `json:"num"`
+		Admin            bool   `json:"admin,omitempty"`
+		God              bool   `json:"god,omitempty"`
+		Auth             []byte `json:"auth,omitempty"`
+		ClientSearchTerm string `json:"clst,omitempty"`
+		ClientSearchType string `json:"clsc,omitempty"`
+		CaseSearchTerm   string `json:"cast,omitempty"`
+		CaseSearchType   string `json:"casc,omitempty"`
 	}
 )
 

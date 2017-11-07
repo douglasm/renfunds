@@ -31,10 +31,25 @@ var (
 	decoder = schema.NewDecoder()
 )
 
+// func init() {
+// 	dayNum := 2001*1000 + 1*50 + 16
+
+// 	d, m, y := dateToDMY(dayNum)
+// 	if d != 16 {
+// 		fmt.Println("day bad", d)
+// 	}
+// 	if m != 1 {
+// 		fmt.Println("day bad", m)
+// 	}
+// 	if y != 2001 {
+// 		fmt.Println("year bad", y)
+// 	}
+// }
+
 func SetRoutes(app *iris.Application) {
 	app.Get("/client/{clientnum:int}", showClient)
-	app.Get("/clients", listClients)
-	app.Get("/clients/{pagenum:int}", listClients)
+	app.Get("/clients", ListClients)
+	app.Get("/clients/{pagenum:int}", ListClients)
 	app.Post("/searchclient", searchClients)
 	app.Post("/searchclient/{pagenum:int}", searchClients)
 	// app.Get("/client/{clientnum:int}", showClient)
@@ -102,4 +117,18 @@ func (s ByClientName) Less(i, j int) bool {
 
 func SetKey(theKey []byte) {
 	key = theKey
+}
+
+func dateToDMY(theDate int) (day, month, year int) {
+	day = theDate % 50
+	theDate -= day
+	month = theDate % 1000
+	theDate -= month
+	month /= 50
+
+	year = theDate / 1000
+	if year < 100 {
+		year += 2000
+	}
+	return
 }

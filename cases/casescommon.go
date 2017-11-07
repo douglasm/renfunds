@@ -17,6 +17,7 @@ type (
 	CaseList struct {
 		Id         int
 		CaseNumber string
+		CMSNumber  string
 		CaseWorker string
 		State      string
 	}

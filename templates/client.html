@@ -4,37 +4,56 @@
 {{template "navbar.html" .}}
 
 <div class="row">
-    <div class="grid_12">
-        <div class="row">
-            <div class="grid_9">
-                <h4>{{.Details.First}} {{.Details.Surname}}</h4>
+    <div class="grid_9">
+        <h4>{{.Details.First}} {{.Details.Surname}}
+            &nbsp;&nbsp;<a href="/editclient/{{.Details.Id}}"
+            class="button icon arrowleft">Edit</a>
+         </h4>
+
+        <div clas="row">
+            <div class="grid_4">
                 {{.Details.Address}}
-                <table>
-                    <thead>
-                        <th>Case number</th>
-                        <th>Case Worker</th>
-                        <th>State</th>
-                    </thead>
-                    <tbody>
-                        {{range $element := .Details.Cases}}
-                            <tr>
-                                <td align="left"><a href="/case/{{$element.Id}}">{{$element.CaseNumber}}</a></td>
-                                <td align="left">{{$element.CaseWorker}}</td>
-                                <td align="left">{{$element.State}}</td>
-                            </tr>
-                        {{end}}
-                    </tbody>
-                </table>
-                {{range $element := .Details.Reports}}
-                    {{$element}}<br />
-                {{end}}
-                {{range $element := .Details.Comments}}
-                    {{$element}}<br />
-                {{end}}
-            </div> <!-- end of grid_9 -->
-            {{template "clientsearch.html" .}}
+                {{if .Details.Phone}}Phone: {{.Details.Phone}}<br />{{end}}
+                {{if .Details.Mobile}}Mobile: {{.Details.Mobile}}<br />{{end}}
+                {{if .Details.EMail}}EMail: {{.Details.EMail}}<br />{{end}}
+                <br />
+            </div>
+            <div class="grid_4">
+                {{if .Details.DOB}}DOB: {{.Details.DOB}}<br />{{end}}
+                {{if .Details.NINum}}NI Num: {{.Details.NINum}}<br />{{end}}
+                {{if .Details.ServiceNum}}Service No: {{.Details.ServiceNum}}<br />{{end}}
+                {{if .Details.Unit}}Service: {{.Details.Unit}}<br />{{end}}
+                <br />
+            </div>
         </div> <!-- end of row -->
-    </div> <!-- end of grid_12 -->
+        <table>
+            <thead>
+                <th>Case number</th>
+                <th>CMS number</th>
+                <th>Case Worker</th>
+                <th>State Add</th>
+            </thead>
+            <tbody>
+                {{range $element := .Details.Cases}}
+                    <tr>
+                        <td align="left"><a href="/case/{{$element.Id}}">{{$element.CaseNumber}}</a></td>
+                        <td align="left">{{$element.CMSNumber}}</td>
+                        <td align="left">{{$element.CaseWorker}}</td>
+                        <td align="left">{{$element.State}}</td>
+                    </tr>
+                {{end}}
+            </tbody>
+        </table>
+        {{range $element := .Details.Reports}}
+            {{$element}}<br />
+        {{end}}
+        {{range $element := .Details.Comments}}
+            {{$element}}<br />
+        {{end}}
+    </div> <!-- end of grid_9 -->
+    <div class="grid_3">
+        {{template "clientsearch.html" .}}
+    </div>
 </div> <!-- end of row -->
 
 

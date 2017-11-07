@@ -112,8 +112,8 @@ type (
 	}
 
 	SearchRecord struct {
-		SearchTerm string `schema:"search"`
-		SearchType string `schema:"stype"`
+		Term string `schema:"search"`
+		Type string `schema:"stype"`
 	}
 
 	M  map[int]interface{}

@@ -112,6 +112,13 @@ type (
 		LetterSent    bool    `bson:"letter_sent,omitempty"`
 	}
 
+	Comment struct {
+		Comment string `bson:"comment,omitempty"`
+		Date    int    `bson:"date,omitempty"`
+		User    int    `bson:"user,omitempty"`
+		Name    string `bson:"name,omitempty"`
+	}
+
 	Establishment struct {
 		Id            int    `bson:"_id"`
 		Establishment string `bson:"establishment,omitempty"`

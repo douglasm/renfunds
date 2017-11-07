@@ -93,6 +93,7 @@ func GetCases(clientNumber int) []CaseList {
 	for iter.Next(&theCase) {
 		newCase := CaseList{CaseNumber: theCase.CaseNumber, CaseWorker: theCase.CaseFirst + " " + theCase.CaseSurname}
 		newCase.Id = theCase.Id
+		newCase.CMSNumber = theCase.CMSId
 		if theCase.Closed {
 			newCase.State = "Closed"
 		} else {

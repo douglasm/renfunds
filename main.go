@@ -158,17 +158,10 @@ func hi(ctx iris.Context) {
 	var (
 		header types.HeaderRecord
 	)
-	// userNumber, _ := ctx.Values().GetInt("user")
-	// fmt.Println(ctx.Values())
-	// fmt.Println(ctx.Values().Get("logged"))
-	// fmt.Println(ctx.Values().Get("user"))
-	// fmt.Println(ctx.Values().Get("admin"))
-	// fmt.Println(ctx.Values().Get("session"))
+
 	theSession := ctx.Values().Get("session")
 	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
-	// theSession := sessionVal.(users.Session)
-	// fmt.Println(header.Loggedin, "vs", userNumber)
 	if !header.Loggedin {
 		user := users.User{Name: "Albert Einstein", Towns: []string{"London", "Manchester", "Paris"}, Num: 65}
 		// fmt.Println("No session set")
@@ -184,12 +177,13 @@ func hi(ctx iris.Context) {
 		return
 	}
 
-	// fmt.Println("We are logged in")
-	header.Title = "RF: Clients"
-	clientList, _ := clients.GetList("", "", 0)
-	ctx.ViewData("Header", header)
-	ctx.ViewData("Details", clientList)
-	ctx.View("main.html")
+	clients.ListClients(ctx)
+	// // fmt.Println("We are logged in")
+	// header.Title = "RF: Clients"
+	// clientList, _ := clients.GetList("", "", 0)
+	// ctx.ViewData("Header", header)
+	// ctx.ViewData("Details", clientList)
+	// ctx.View("main.html")
 }
 
 func authCheck(ctx iris.Context) {
@@ -206,6 +200,8 @@ func authCheck(ctx iris.Context) {
 	}
 
 	// fmt.Println("In authCheck", path)
+	fmt.Println("Referer", ctx.GetHeader("Referer"))
+	fmt.Println("Origin", ctx.GetHeader("Origin"))
 
 	theSession.ValidCookie(ctx.GetCookie("session"))
 	ctx.Values().Set("logged", theSession.LoggedIn)
@@ -214,6 +210,7 @@ func authCheck(ctx iris.Context) {
 	ctx.Values().Set("session", theSession)
 
 	if ctx.Method() == "POST" {
+		// fmt.Println(ctx.Header(name, value))
 		// fmt.Println("checking a post")
 		// nonceString := ctx.FormValue("checkfield")
 		// fmt.Println(nonceString)

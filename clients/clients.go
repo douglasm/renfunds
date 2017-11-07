@@ -2,7 +2,7 @@ package clients
 
 import (
 	// "log"
-	// "fmt"
+	"fmt"
 	"html"
 	"html/template"
 	"net/http"
@@ -24,33 +24,40 @@ type (
 		Case    string
 		First   string
 		Surname string
-		NiNum   string
+		DOB     string
 	}
 
 	ClientList []ClientShow
 
 	ClientDisplay struct {
-		Id       int
-		First    string
-		Surname  string
-		Phone    string
-		NiNum    string
-		Address  template.HTML
-		PostCode string
-		Comments []string
-		Reports  []string
-		Cases    []cases.CaseList
+		Id         int
+		First      string
+		Surname    string
+		Phone      string
+		Mobile     string
+		EMail      string
+		DOB        string
+		NINum      string
+		ServiceNum string
+		Unit       string
+		Address    template.HTML
+		PostCode   string
+		Comments   []string
+		Reports    []string
+		Cases      []cases.CaseList
 	}
 )
 
-func listClients(ctx iris.Context) {
+func ListClients(ctx iris.Context) {
 	var (
 		header     types.HeaderRecord
 		pageNum    int
 		nextPage   bool
 		navButtons types.NavButtonRecord
+		searchRec  types.SearchRecord
 		err        error
 	)
+
 	theSession := ctx.Values().Get("session")
 	if !theSession.(users.Session).LoggedIn {
 		ctx.Redirect("/", http.StatusFound)
@@ -78,6 +85,7 @@ func listClients(ctx iris.Context) {
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", clientList)
 	ctx.ViewData("NavButtons", navButtons)
+	ctx.ViewData("Search", searchRec)
 	ctx.View("clients.html")
 }
 
@@ -108,7 +116,7 @@ func searchClients(ctx iris.Context) {
 	header.Admin = theSession.(users.Session).Admin
 	// fmt.Println("We are logged in")
 	header.Title = "RF: Clients"
-	clientList, nextPage := GetList(theSearch.SearchType, theSearch.SearchTerm, pageNum)
+	clientList, nextPage := GetList(theSearch.Type, theSearch.Term, pageNum)
 
 	navData := types.M{}
 	navData[types.KFieldNavPage] = pageNum
@@ -120,6 +128,7 @@ func searchClients(ctx iris.Context) {
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", clientList)
 	ctx.ViewData("NavButtons", navButtons)
+	ctx.ViewData("Search", theSearch)
 	ctx.View("clients.html")
 }
 
@@ -151,8 +160,12 @@ func showClient(ctx iris.Context) {
 	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
 
 	err = clientColl.FindId(clientNum).One(&theClient)
-
+	if err != nil {
+		fmt.Println("Client read error:", err)
+	}
+	fmt.Println(theClient.Id)
 	header.Title = "RF: Client"
+	details.Id = theClient.Id
 	details.First = theClient.First
 	details.Surname = theClient.Surname
 	tempStr := html.EscapeString(theClient.Address)
@@ -167,6 +180,15 @@ func showClient(ctx iris.Context) {
 	details.Address = template.HTML(tempStr)
 	details.PostCode = theClient.PostCode
 	details.Phone = theClient.Phone
+	details.Mobile = theClient.Mobile
+	details.EMail = theClient.EMail
+	details.NINum = theClient.NINum
+	d, m, y := dateToDMY(theClient.DOB)
+	if d != 0 && m != 0 {
+		details.DOB = fmt.Sprintf("%02d/%02d/%04d", d, m, y)
+	}
+	details.ServiceNum = theClient.ServiceNo
+	details.Unit = theClient.Services
 	details.Comments = theClient.Comments
 	details.Reports = theClient.Reports
 
@@ -218,7 +240,8 @@ func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool
 			newClient := ClientShow{Id: theClient.Id}
 			newClient.First = theClient.First
 			newClient.Surname = theClient.Surname
-			newClient.NiNum = theClient.NINum
+			d, m, y := dateToDMY(theClient.DOB)
+			newClient.DOB = fmt.Sprintf("%02d/%02d/%04d", d, m, y)
 			theList = append(theList, newClient)
 		} else {
 			return theList, true

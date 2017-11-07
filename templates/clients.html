@@ -15,22 +15,28 @@
                     <thead>
                         <tr>
                             <th data-class="expand">
-                                First Name
-                            </th>
-                            <th>
                                 Surname
                             </th>
                             <th>
-                                NI Num
+                                First Name
+                            </th>
+                            <th>
+                                <div class="navbuttons">
+                                    DOB
+                                    {{if .Header.Admin}}
+                                        &nbsp;&nbsp;&nbsp;<a href="/newclient" class="button icon arrowleft">Add client</a>
+                                    {{end}}
+                                </div>
+
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         {{range $element := .Details}}
                             <tr>
-                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.First}}</a></td>
                                 <td align="left"><a href="/client/{{$element.Id}}">{{$element.Surname}}</a></td>
-                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.NiNum}}</a></td>
+                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.First}}</a></td>
+                                <td align="left"><a href="/client/{{$element.Id}}">{{$element.DOB}}</a></td>
                             </tr>
                         {{end}}
                     </tbody>
