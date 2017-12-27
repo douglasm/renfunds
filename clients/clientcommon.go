@@ -49,6 +49,7 @@ var (
 func SetRoutes(app *iris.Application) {
 	app.Get("/client/{clientnum:int}", showClient)
 	app.Get("/clients", ListClients)
+	app.Any("/editclient/{clientnum:int}", editClientHandler)
 	app.Get("/clients/{pagenum:int}", ListClients)
 	app.Post("/searchclient", searchClients)
 	app.Post("/searchclient/{pagenum:int}", searchClients)

@@ -2,7 +2,7 @@ package cases
 
 import (
 	// "log"
-	// "fmt"
+	"fmt"
 	"net/http"
 	// "sort"
 	// "strings"
@@ -69,8 +69,24 @@ func showCase(ctx iris.Context) {
 	// details.PostCode = theClient.PostCode
 	// details.Phone = theClient.Phone
 	details.ClientNum = theClient.Id
-	details.Comments = theClient.Comments
-	details.Reports = theClient.Reports
+	for _, item := range theClient.Comments {
+		theDate := ""
+		if item.Date != 0 {
+			d := item.Date % 50
+			m := (item.Date - d) % 1000
+			m /= 50
+			y := item.Date / 1000
+			theDate = fmt.Sprintf("%d/%02d/%04d ", d, m, y)
+		}
+		theDate += item.Comment
+		if len(item.Name) > 0 {
+			theDate += " - " + item.Name
+		}
+		details.Comments = append(details.Comments, theDate)
+	}
+	for _, item := range theClient.Reports {
+		details.Reports = append(details.Reports, item.Comment)
+	}
 
 	// details.Cases = cases.GetCases(theClient.Id)
 

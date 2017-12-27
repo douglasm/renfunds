@@ -44,12 +44,38 @@
                 {{end}}
             </tbody>
         </table>
-        {{range $element := .Details.Reports}}
-            {{$element}}<br />
-        {{end}}
-        {{range $element := .Details.Comments}}
-            {{$element}}<br />
-        {{end}}
+        <table>
+            <thead>
+                <th>Date</th>
+                <th>Comment</th>
+                <th>Case Worker</th>
+            </thead>
+            <tbody>
+                {{range $element := .Details.Comments}}
+                    <tr>
+                        <td>{{$element.Date}}</td>
+                        <td>{{$element.Comment}}</td>
+                        <td>{{$element.Name}}</td>
+                    </tr>
+                {{end}}
+            </tbody>
+        </table>
+        <table>
+            <thead>
+                <th>Date</th>
+                <th>Report</th>
+                <th>Case Worker</th>
+            </thead>
+            <tbody>
+                {{range $element := .Details.Reports}}
+                    <tr>
+                        <td>{{$element.Date}}</td>
+                        <td>{{$element.Comment}}</td>
+                        <td>{{$element.Name}}</td>
+                    </tr>
+                {{end}}
+            </tbody>
+        </table>
     </div> <!-- end of grid_9 -->
     <div class="grid_3">
         {{template "clientsearch.html" .}}

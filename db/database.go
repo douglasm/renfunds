@@ -56,47 +56,47 @@ type (
 	}
 
 	Case struct {
-		Id          int      `bson:"_id"`
-		ClientNum   int      `bson:"clientnum"`
-		CaseNumber  string   `bson:"case,omitempty"`
-		CMSId       string   `bson:"cms,omitempty"`
-		VisitNumber string   `bson:"visit,omitempty"`
-		Annuity     bool     `bson:"annuity,omitempty"`
-		Comments    []string `bson:"comments,omitempty"`
-		Reports     []string `bson:"report,omitempty"`
-		UserIssuing int      `bson:"usernum,omitempty"`
-		CaseId      string   `bson:"cwid,omitempty"`
-		CaseFirst   string   `bson:"casefirst,omitempty"`
-		CaseSurname string   `bson:"casesurn,omitempty"`
-		Closed      bool     `bson:"closed,omitempty"`
-		Shredded    bool     `bson:"shredded,omitempty"`
-		Added       int      `bson:"added"`
-		DateClosed  int      `bson:"dateclosed"`
-		Updated     int      `bson:"updated"`
-		CWNum       int      `bson:"cwnum"`
+		Id          int       `bson:"_id"`
+		ClientNum   int       `bson:"clientnum"`
+		CaseNumber  string    `bson:"case,omitempty"`
+		CMSId       string    `bson:"cms,omitempty"`
+		VisitNumber string    `bson:"visit,omitempty"`
+		Annuity     bool      `bson:"annuity,omitempty"`
+		Comments    []Comment `bson:"comments,omitempty"`
+		Reports     []Comment `bson:"report,omitempty"`
+		UserIssuing int       `bson:"usernum,omitempty"`
+		CaseId      string    `bson:"cwid,omitempty"`
+		CaseFirst   string    `bson:"casefirst,omitempty"`
+		CaseSurname string    `bson:"casesurn,omitempty"`
+		Closed      bool      `bson:"closed,omitempty"`
+		Shredded    bool      `bson:"shredded,omitempty"`
+		Added       int       `bson:"added"`
+		DateClosed  int       `bson:"dateclosed"`
+		Updated     int       `bson:"updated"`
+		CWNum       int       `bson:"cwnum"`
 	}
 
 	Client struct {
-		Id          int      `bson:"_id"`
-		DOB         int      `bson:"dob,omitempty"`
-		Title       string   `bson:"title,omitempty"`
-		First       string   `bson:"first,omitempty"`
-		Surname     string   `bson:"surname,omitempty"`
-		Letters     string   `bson:"letters,omitempty"`
-		Address     string   `bson:"address,omitempty"`
-		PostCode    string   `bson:"postcode,omitempty"`
-		Phone       string   `bson:"phone,omitempty"`
-		Mobile      string   `bson:"mobile,omitempty"`
-		EMail       string   `bson:"email,omitempty"`
-		NINum       string   `bson:"ninum,omitempty"`
-		ServiceNo   string   `bson:"serviceno,omitempty"`
-		Services    string   `bson:"services,omitempty"`
-		Annuity     bool     `bson:"annuity,omitempty"`
-		Comments    []string `bson:"comments,omitempty"`
-		Reports     []string `bson:"report,omitempty"`
-		UserIssuing int      `bson:"usernum,omitempty"`
-		Based       string   `bson:"based,omitempty"`
-		Order       int      `bson:"order"`
+		Id          int       `bson:"_id"`
+		DOB         int       `bson:"dob,omitempty"`
+		Title       string    `bson:"title,omitempty"`
+		First       string    `bson:"first,omitempty"`
+		Surname     string    `bson:"surname,omitempty"`
+		Letters     string    `bson:"letters,omitempty"`
+		Address     string    `bson:"address,omitempty"`
+		PostCode    string    `bson:"postcode,omitempty"`
+		Phone       string    `bson:"phone,omitempty"`
+		Mobile      string    `bson:"mobile,omitempty"`
+		EMail       string    `bson:"email,omitempty"`
+		NINum       string    `bson:"ninum,omitempty"`
+		ServiceNo   string    `bson:"serviceno,omitempty"`
+		Services    string    `bson:"services,omitempty"`
+		Annuity     bool      `bson:"annuity,omitempty"`
+		Comments    []Comment `bson:"comments,omitempty"`
+		Reports     []Comment `bson:"report,omitempty"`
+		UserIssuing int       `bson:"usernum,omitempty"`
+		Based       string    `bson:"based,omitempty"`
+		Order       int       `bson:"order"`
 	}
 
 	Collection struct {
@@ -170,36 +170,36 @@ type (
 	}
 
 	People struct {
-		Id          int      `bson:"_id"`
-		CaseNumber  string   `bson:"case,omitempty"`
-		CMSId       string   `bson:"cms,omitempty"`
-		VisitNumber string   `bson:"visit,omitempty"`
-		DOB         int      `bson:"dob,omitempty"`
-		Title       string   `bson:"title,omitempty"`
-		First       string   `bson:"first,omitempty"`
-		Surname     string   `bson:"surname,omitempty"`
-		Letters     string   `bson:"letters,omitempty"`
-		Address     string   `bson:"address,omitempty"`
-		PostCode    string   `bson:"postcode,omitempty"`
-		Phone       string   `bson:"phone,omitempty"`
-		Mobile      string   `bson:"mobile,omitempty"`
-		EMail       string   `bson:"email,omitempty"`
-		NINum       string   `bson:"ninum,omitempty"`
-		ServiceNo   string   `bson:"serviceno,omitempty"`
-		Services    string   `bson:"services,omitempty"`
-		Annuity     bool     `bson:"annuity,omitempty"`
-		Comments    []string `bson:"comments,omitempty"`
-		Reports     []string `bson:"report,omitempty"`
-		UserIssuing int      `bson:"usernum,omitempty"`
-		CaseFirst   string   `bson:"casefirst,omitempty"`
-		CaseSurn    string   `bson:"casesurn,omitempty"`
-		Based       string   `bson:"based,omitempty"`
-		Closed      bool     `bson:"closed,omitempty"`
-		Shredded    bool     `bson:"shredded,omitempty"`
-		Added       int      `bson:"added"`
-		DateClosed  int      `bson:"dateclosed"`
-		Updated     int      `bson:"updated"`
-		CWNum       int      `bson:"cwnum"`
+		Id          int       `bson:"_id"`
+		CaseNumber  string    `bson:"case,omitempty"`
+		CMSId       string    `bson:"cms,omitempty"`
+		VisitNumber string    `bson:"visit,omitempty"`
+		DOB         int       `bson:"dob,omitempty"`
+		Title       string    `bson:"title,omitempty"`
+		First       string    `bson:"first,omitempty"`
+		Surname     string    `bson:"surname,omitempty"`
+		Letters     string    `bson:"letters,omitempty"`
+		Address     string    `bson:"address,omitempty"`
+		PostCode    string    `bson:"postcode,omitempty"`
+		Phone       string    `bson:"phone,omitempty"`
+		Mobile      string    `bson:"mobile,omitempty"`
+		EMail       string    `bson:"email,omitempty"`
+		NINum       string    `bson:"ninum,omitempty"`
+		ServiceNo   string    `bson:"serviceno,omitempty"`
+		Services    string    `bson:"services,omitempty"`
+		Annuity     bool      `bson:"annuity,omitempty"`
+		Comments    []Comment `bson:"comments,omitempty"`
+		Reports     []Comment `bson:"reports,omitempty"`
+		UserIssuing int       `bson:"usernum,omitempty"`
+		CaseFirst   string    `bson:"casefirst,omitempty"`
+		CaseSurn    string    `bson:"casesurn,omitempty"`
+		Based       string    `bson:"based,omitempty"`
+		Closed      bool      `bson:"closed,omitempty"`
+		Shredded    bool      `bson:"shredded,omitempty"`
+		Added       int       `bson:"added"`
+		DateClosed  int       `bson:"dateclosed"`
+		Updated     int       `bson:"updated"`
+		CWNum       int       `bson:"cwnum"`
 	}
 
 	User struct {

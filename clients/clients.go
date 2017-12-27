@@ -9,6 +9,7 @@ import (
 	// "sort"
 	"strings"
 
+	// "github.com/gorilla/schema"
 	"github.com/kataras/iris"
 	// "gopkg.in/mgo.v2"
 
@@ -42,9 +43,25 @@ type (
 		Unit       string
 		Address    template.HTML
 		PostCode   string
-		Comments   []string
-		Reports    []string
+		Comments   []CommentDisplay
+		Reports    []CommentDisplay
 		Cases      []cases.CaseList
+	}
+
+	ClientEdit struct {
+		Id      int    `schema:"id"`
+		First   string `schema:"first"`
+		Surname string `schema:"surname"`
+		Phone   string `schema:"phone"`
+		Mobile  string `schema:"mobile"`
+		EMail   string `schema:"email"`
+		Address string `schema:"address"`
+	}
+
+	CommentDisplay struct {
+		Date    string
+		Comment template.HTML
+		Name    template.HTML
 	}
 )
 
@@ -87,6 +104,38 @@ func ListClients(ctx iris.Context) {
 	ctx.ViewData("NavButtons", navButtons)
 	ctx.ViewData("Search", searchRec)
 	ctx.View("clients.html")
+}
+
+func editClientHandler(ctx iris.Context) {
+	var (
+		theClient db.Client
+		details   ClientEdit
+		header    types.HeaderRecord
+	)
+	theSession := ctx.Values().Get("session")
+	if !theSession.(users.Session).LoggedIn {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	clientNum, err := ctx.Params().GetInt("clientnum")
+	if err != nil {
+		clientNum = 0
+	}
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+	err = clientColl.FindId(clientNum).One(&theClient)
+
+	details.fillEdit(theClient)
+
+	header.Title = "RF: Edit client"
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+
+	ctx.View("clientedit.html")
 }
 
 func searchClients(ctx iris.Context) {
@@ -163,7 +212,7 @@ func showClient(ctx iris.Context) {
 	if err != nil {
 		fmt.Println("Client read error:", err)
 	}
-	fmt.Println(theClient.Id)
+	// fmt.Println(theClient.Id)
 	header.Title = "RF: Client"
 	details.Id = theClient.Id
 	details.First = theClient.First
@@ -189,8 +238,8 @@ func showClient(ctx iris.Context) {
 	}
 	details.ServiceNum = theClient.ServiceNo
 	details.Unit = theClient.Services
-	details.Comments = theClient.Comments
-	details.Reports = theClient.Reports
+	details.Comments = getComments(theClient.Comments)
+	details.Reports = getComments(theClient.Reports)
 
 	details.Cases = cases.GetCases(theClient.Id)
 
@@ -250,4 +299,33 @@ func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool
 	iter.Close()
 
 	return theList, false
+}
+
+func (ce *ClientEdit) fillEdit(theClient db.Client) {
+	ce.Id = theClient.Id
+	ce.First = theClient.First
+	ce.Surname = theClient.Surname
+	ce.Phone = theClient.Phone
+	ce.Mobile = theClient.Mobile
+	ce.EMail = theClient.EMail
+	ce.Address = theClient.Address
+}
+
+func getComments(comments []db.Comment) (retVal []CommentDisplay) {
+	for _, item := range comments {
+		newComment := CommentDisplay{}
+		if item.Date != 0 {
+			d := item.Date % 50
+			m := (item.Date - d) % 1000
+			m /= 50
+			y := item.Date / 1000
+			newComment.Date = fmt.Sprintf("%d/%02d/%04d ", d, m, y)
+		}
+		newComment.Comment = template.HTML(html.EscapeString(item.Comment))
+		if len(item.Name) > 0 {
+			newComment.Name = template.HTML(html.EscapeString(item.Name))
+		}
+		retVal = append(retVal, newComment)
+	}
+	return
 }

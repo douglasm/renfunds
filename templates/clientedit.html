@@ -1,0 +1,85 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_9">
+        <h4>{{.Details.First}} {{.Details.Surname}}</h4>
+        <form class="login_form" action="/clientedit/{{.Details.Id}}" method="post">
+            <div class="row">
+                <div class="grid_8">
+                    <div class="grid_2">
+                        <strong>First Name:</strong>
+                    </div>
+                    <div class="grid_6>">
+                        <input type="text" name="first" placeholder="First Name(s)" size="30" value="{{.Details.First}}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="grid_8">
+                    <div class="grid_2">
+                        <strong>Surname:</strong>
+                    </div>
+                    <div class="grid_6>">
+                        <input type="text" name="surname" placeholder="Surname" size="30" value="{{.Details.Surname}}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="grid_8">
+                    <div class="grid_2">
+                        <strong>Phone:</strong>
+                    </div>
+                    <div class="grid_6>">
+                        <input type="text" name="phone" placeholder="Phone" size="30" value="{{.Details.Phone}}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="grid_8">
+                    <div class="grid_2">
+                        <strong>Mobile:</strong>
+                    </div>
+                    <div class="grid_6>">
+                        <input type="text" name="mobile" placeholder="Mobile" size="30" value="{{.Details.Mobile}}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="grid_8">
+                    <div class="grid_2">
+                        <strong>Address:</strong><br />
+                    </div>
+                    <div class="grid_6">
+                        <textarea name="address" placeholder="Address" rows="4" cols="30" value="{{.Details.Address}}">{{.Details.Address}}</textarea>
+                    </div>
+                </div>
+            </div>
+                <div class="grid_4">
+                    {{if .Details.DOB}}DOB: {{.Details.DOB}}<br />{{end}}
+                    {{if .Details.NINum}}NI Num: {{.Details.NINum}}<br />{{end}}
+                    {{if .Details.ServiceNum}}Service No: {{.Details.ServiceNum}}<br />{{end}}
+                    {{if .Details.Unit}}Service: {{.Details.Unit}}<br />{{end}}
+                    <br />
+                </div>
+            <input type="hidden" name="id" value="{{.Details.Id}}">
+            <input type="hidden" name="checkfield" value="{{.Checkfield}}">
+            <input name="commit" type="submit" value="Save">
+        </form>
+        {{range $element := .Details.Reports}}
+            {{$element}}<br />
+        {{end}}
+        {{range $element := .Details.Comments}}
+            {{$element}}<br />
+        {{end}}
+    </div> <!-- end of grid_9 -->
+    <div class="grid_3">
+        {{template "clientsearch.html" .}}
+    </div>
+</div> <!-- end of row -->
+
+
+</body>
+</html>
