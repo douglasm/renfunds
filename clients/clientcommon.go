@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -29,6 +30,11 @@ type (
 var (
 	key     []byte
 	decoder = schema.NewDecoder()
+)
+
+var (
+	ErrorNoFirst   = errors.New("No first name")
+	ErrorNoSurname = errors.New("No surname")
 )
 
 // func init() {

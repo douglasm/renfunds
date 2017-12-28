@@ -200,8 +200,8 @@ func authCheck(ctx iris.Context) {
 	}
 
 	// fmt.Println("In authCheck", path)
-	fmt.Println("Referer", ctx.GetHeader("Referer"))
-	fmt.Println("Origin", ctx.GetHeader("Origin"))
+	// fmt.Println("Referer", ctx.GetHeader("Referer"))
+	// fmt.Println("Origin", ctx.GetHeader("Origin"))
 
 	theSession.ValidCookie(ctx.GetCookie("session"))
 	ctx.Values().Set("logged", theSession.LoggedIn)

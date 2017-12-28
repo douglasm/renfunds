@@ -39,10 +39,29 @@ const (
 )
 
 const (
-	KFieldClientsNiNum    = "ninum"
-	KFieldClientsComments = "comments"
-	KFieldClientsReports  = "report"
-	KFieldClientsOrder    = "order"
+	KFieldClientsNiNum      = "ninum"
+	KFieldClientsComments   = "comments"
+	KFieldClientsReports    = "report"
+	KFieldClientsOrder      = "order"
+	KFieldClientsDOB        = "dob"
+	KFieldClientsTitle      = "title"
+	KFieldClientsFirst      = "first"
+	KFieldClientsSurname    = "surname"
+	KFieldClientsLetters    = "letters"
+	KFieldClientsAddress    = "address"
+	KFieldClientsPostCode   = "postcode"
+	KFieldClientsPhone      = "phone"
+	KFieldClientsMobile     = "mobile"
+	KFieldClientsEMail      = "email"
+	KFieldClientsNINum      = "ninum"
+	KFieldClientsServiceNum = "serviceno"
+	KFieldClientsUnit       = "services"
+	// Annuity     bool      `bson:"annuity,omitempty"`
+	// Comments    []Comment `bson:"comments,omitempty"`
+	// Reports     []Comment `bson:"report,omitempty"`
+	// UserIssuing int       `bson:"usernum,omitempty"`
+	// Based       string    `bson:"based,omitempty"`
+	// Order       int       `bson:"order"`
 )
 
 const (
@@ -89,8 +108,8 @@ type (
 		Mobile      string    `bson:"mobile,omitempty"`
 		EMail       string    `bson:"email,omitempty"`
 		NINum       string    `bson:"ninum,omitempty"`
-		ServiceNo   string    `bson:"serviceno,omitempty"`
-		Services    string    `bson:"services,omitempty"`
+		ServiceNum  string    `bson:"serviceno,omitempty"`
+		Unit        string    `bson:"services,omitempty"`
 		Annuity     bool      `bson:"annuity,omitempty"`
 		Comments    []Comment `bson:"comments,omitempty"`
 		Reports     []Comment `bson:"report,omitempty"`

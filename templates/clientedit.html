@@ -6,7 +6,8 @@
 <div class="row">
     <div class="grid_9">
         <h4>{{.Details.First}} {{.Details.Surname}}</h4>
-        <form class="login_form" action="/clientedit/{{.Details.Id}}" method="post">
+        {{template "error_display.html" .}}
+        <form class="login_form" action="/editclient/{{.Details.Id}}" method="post">
             <div class="row">
                 <div class="grid_8">
                     <div class="grid_2">
@@ -57,20 +58,61 @@
                     </div>
                 </div>
             </div>
-                <div class="grid_4">
-                    {{if .Details.DOB}}DOB: {{.Details.DOB}}<br />{{end}}
-                    {{if .Details.NINum}}NI Num: {{.Details.NINum}}<br />{{end}}
-                    {{if .Details.ServiceNum}}Service No: {{.Details.ServiceNum}}<br />{{end}}
-                    {{if .Details.Unit}}Service: {{.Details.Unit}}<br />{{end}}
-                    <br />
+            <div class="row">
+                <div class="grid_8">
+                    <div class="grid_2">
+                        <strong>Postcode:</strong><br />
+                    </div>
+                    <div class="grid_6">
+                        <input type="text" name="address" placeholder="postcode" size="30" value="{{.Details.PostCode}}">
+                    </div>
                 </div>
+            </div>
+
+            <div class="row">
+                <div class="grid_8">
+                    <div class="grid_2">
+                        <strong>Date of Birth:</strong>
+                    </div>
+                    <div class="grid_6>">
+                        <input type="text" name="dob" placeholder="Date of Birth" size="30" value="{{.Details.DOB}}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="grid_8">
+                    <div class="grid_2">
+                        <strong>NI Number:</strong>
+                    </div>
+                    <div class="grid_6>">
+                        <input type="text" name="ninum" placeholder="NI Number" size="30" value="{{.Details.NINum}}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="grid_8">
+                    <div class="grid_2">
+                        <strong>Service Number:</strong>
+                    </div>
+                    <div class="grid_6>">
+                        <input type="text" name="servicenum" placeholder="Service Number" size="30" value="{{.Details.ServiceNum}}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="grid_8">
+                    <div class="grid_2">
+                        <strong>Unit:</strong>
+                    </div>
+                    <div class="grid_6>">
+                        <input type="text" name="unit" placeholder="Unit" size="30" value="{{.Details.Unit}}">
+                    </div>
+                </div>
+            </div>
             <input type="hidden" name="id" value="{{.Details.Id}}">
             <input type="hidden" name="checkfield" value="{{.Checkfield}}">
-            <input name="commit" type="submit" value="Save">
+            <p><input name="commit" type="submit" value="Save"></p>
         </form>
-        {{range $element := .Details.Reports}}
-            {{$element}}<br />
-        {{end}}
         {{range $element := .Details.Comments}}
             {{$element}}<br />
         {{end}}

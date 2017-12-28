@@ -11,7 +11,7 @@ import (
 
 	// "github.com/gorilla/schema"
 	"github.com/kataras/iris"
-	// "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"ssafa/cases"
 	"ssafa/db"
@@ -49,13 +49,21 @@ type (
 	}
 
 	ClientEdit struct {
-		Id      int    `schema:"id"`
-		First   string `schema:"first"`
-		Surname string `schema:"surname"`
-		Phone   string `schema:"phone"`
-		Mobile  string `schema:"mobile"`
-		EMail   string `schema:"email"`
-		Address string `schema:"address"`
+		Id         int              `schema:"id"`
+		First      string           `schema:"first"`
+		Surname    string           `schema:"surname"`
+		DOB        string           `schema:"dob"`
+		NINum      string           `schema:"ninum"`
+		ServiceNum string           `schema:"servicenum"`
+		Unit       string           `schema:"unit"`
+		Phone      string           `schema:"phone"`
+		Mobile     string           `schema:"mobile"`
+		EMail      string           `schema:"email"`
+		Address    string           `schema:"address"`
+		PostCode   string           `schema:"postcode"`
+		Comments   []CommentDisplay `schema:"comments"`
+		Checkfield string           `schema:"checkfield"`
+		Commit     string           `schema:"commit"`
 	}
 
 	CommentDisplay struct {
@@ -108,9 +116,10 @@ func ListClients(ctx iris.Context) {
 
 func editClientHandler(ctx iris.Context) {
 	var (
-		theClient db.Client
-		details   ClientEdit
-		header    types.HeaderRecord
+		theClient    db.Client
+		details      ClientEdit
+		header       types.HeaderRecord
+		errorMessage string
 	)
 	theSession := ctx.Values().Get("session")
 	if !theSession.(users.Session).LoggedIn {
@@ -126,14 +135,40 @@ func editClientHandler(ctx iris.Context) {
 	session := db.MongoSession.Copy()
 	defer session.Close()
 
-	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
-	err = clientColl.FindId(clientNum).One(&theClient)
+	switch ctx.Method() {
+	case http.MethodGet:
+		if clientNum > 0 {
+			clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+			err = clientColl.FindId(clientNum).One(&theClient)
+			details.fillEdit(theClient)
+		}
 
-	details.fillEdit(theClient)
+	case http.MethodPost:
+		fmt.Println("Got edit post")
+		fmt.Println(ctx.FormValues())
+		err = decoder.Decode(&details, ctx.FormValues())
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = details.checkClient()
+		if err == nil {
+			fmt.Println("Good customer")
+			if clientNum == 0 {
+				clientNum = details.saveClient()
+			} else {
+				details.updateClient()
+			}
+			ctx.Redirect(fmt.Sprintf("/client/%d", clientNum), http.StatusFound)
+			return
+		} else {
+			errorMessage = err.Error()
+		}
+	}
 
 	header.Title = "RF: Edit client"
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
+	ctx.ViewData("ErrorMessage", errorMessage)
 
 	ctx.View("clientedit.html")
 }
@@ -236,8 +271,8 @@ func showClient(ctx iris.Context) {
 	if d != 0 && m != 0 {
 		details.DOB = fmt.Sprintf("%02d/%02d/%04d", d, m, y)
 	}
-	details.ServiceNum = theClient.ServiceNo
-	details.Unit = theClient.Services
+	details.ServiceNum = theClient.ServiceNum
+	details.Unit = theClient.Unit
 	details.Comments = getComments(theClient.Comments)
 	details.Reports = getComments(theClient.Reports)
 
@@ -309,6 +344,10 @@ func (ce *ClientEdit) fillEdit(theClient db.Client) {
 	ce.Mobile = theClient.Mobile
 	ce.EMail = theClient.EMail
 	ce.Address = theClient.Address
+	ce.PostCode = theClient.PostCode
+	ce.NINum = theClient.NINum
+	ce.ServiceNum = theClient.ServiceNum
+	ce.Unit = theClient.Unit
 }
 
 func getComments(comments []db.Comment) (retVal []CommentDisplay) {
@@ -328,4 +367,139 @@ func getComments(comments []db.Comment) (retVal []CommentDisplay) {
 		retVal = append(retVal, newComment)
 	}
 	return
+}
+
+func (ce *ClientEdit) checkClient() error {
+	if len(ce.First) == 0 {
+		return ErrorNoFirst
+	}
+	if len(ce.Surname) == 0 {
+		return ErrorNoSurname
+	}
+
+	return nil
+}
+
+func (ce *ClientEdit) saveClient() int {
+	var (
+		theClient db.Client
+	)
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+
+	theClient.Id = db.GetNextSequence(db.CollectionClients)
+	theClient.First = ce.First
+	theClient.Surname = ce.Surname
+	theClient.Phone = ce.Phone
+	theClient.Mobile = ce.Mobile
+	theClient.EMail = ce.EMail
+	theClient.Address = ce.Address
+	theClient.PostCode = ce.PostCode
+	theClient.NINum = ce.NINum
+	theClient.ServiceNum = ce.ServiceNum
+	theClient.Unit = ce.Unit
+
+	err := clientColl.Insert(&theClient)
+	if err != nil {
+		println("Client save error:", err)
+	}
+
+	return theClient.Id
+}
+
+func (ce *ClientEdit) updateClient() {
+	var (
+		theClient db.Client
+	)
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+
+	err := clientColl.FindId(ce.Id).One(&theClient)
+	sets := bson.M{}
+	unsets := bson.M{}
+
+	if ce.First != theClient.First {
+		sets[db.KFieldClientsFirst] = ce.First
+	}
+	if ce.Surname != theClient.Surname {
+		sets[db.KFieldClientsSurname] = ce.Surname
+	}
+	if ce.Address != theClient.Address {
+		if len(ce.Address) > 0 {
+			sets[db.KFieldClientsAddress] = ce.Address
+		} else {
+			unsets[db.KFieldClientsAddress] = 1
+		}
+	}
+
+	if ce.Phone != theClient.Phone {
+		if len(ce.Phone) > 0 {
+			sets[db.KFieldClientsPhone] = ce.Phone
+		} else {
+			unsets[db.KFieldClientsPhone] = 1
+		}
+	}
+
+	if ce.Mobile != theClient.Mobile {
+		if len(ce.Mobile) > 0 {
+			sets[db.KFieldClientsMobile] = ce.Mobile
+		} else {
+			unsets[db.KFieldClientsMobile] = 1
+		}
+	}
+
+	if ce.EMail != theClient.EMail {
+		if len(ce.EMail) > 0 {
+			sets[db.KFieldClientsEMail] = ce.EMail
+		} else {
+			unsets[db.KFieldClientsEMail] = 1
+		}
+	}
+
+	if ce.NINum != theClient.NINum {
+		if len(ce.NINum) > 0 {
+			sets[db.KFieldClientsNINum] = ce.NINum
+		} else {
+			unsets[db.KFieldClientsNINum] = 1
+		}
+	}
+
+	if ce.ServiceNum != theClient.ServiceNum {
+		if len(ce.ServiceNum) > 0 {
+			sets[db.KFieldClientsServiceNum] = ce.ServiceNum
+		} else {
+			unsets[db.KFieldClientsServiceNum] = 1
+		}
+	}
+
+	if ce.Unit != theClient.Unit {
+		if len(ce.Unit) > 0 {
+			sets[db.KFieldClientsUnit] = ce.Unit
+		} else {
+			unsets[db.KFieldClientsUnit] = 1
+		}
+	}
+
+	update := bson.M{}
+	if len(sets) > 0 {
+		if len(unsets) > 0 {
+			update = bson.M{"$set": sets, "$unset": unsets}
+		} else {
+			update = bson.M{"$set": sets}
+		}
+
+	} else {
+		if len(unsets) == 0 {
+			return
+		}
+		update = bson.M{"$unset": unsets}
+	}
+	err = clientColl.UpdateId(ce.Id, update)
+	if err != nil {
+		fmt.Println("Update error:", err)
+	}
 }
