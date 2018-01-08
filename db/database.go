@@ -2,6 +2,8 @@ package db
 
 import (
 	// "fmt"
+	"time"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -61,7 +63,6 @@ const (
 	// Reports     []Comment `bson:"report,omitempty"`
 	// UserIssuing int       `bson:"usernum,omitempty"`
 	// Based       string    `bson:"based,omitempty"`
-	// Order       int       `bson:"order"`
 )
 
 const (
@@ -81,7 +82,6 @@ type (
 		CMSId       string    `bson:"cms,omitempty"`
 		VisitNumber string    `bson:"visit,omitempty"`
 		Annuity     bool      `bson:"annuity,omitempty"`
-		Comments    []Comment `bson:"comments,omitempty"`
 		Reports     []Comment `bson:"report,omitempty"`
 		UserIssuing int       `bson:"usernum,omitempty"`
 		CaseId      string    `bson:"cwid,omitempty"`
@@ -93,6 +93,8 @@ type (
 		DateClosed  int       `bson:"dateclosed"`
 		Updated     int       `bson:"updated"`
 		CWNum       int       `bson:"cwnum"`
+		Created     int       `bson:"create,omitempty"`
+		Changed     int       `bson:"change,omitempty"`
 	}
 
 	Client struct {
@@ -112,10 +114,11 @@ type (
 		Unit        string    `bson:"services,omitempty"`
 		Annuity     bool      `bson:"annuity,omitempty"`
 		Comments    []Comment `bson:"comments,omitempty"`
-		Reports     []Comment `bson:"report,omitempty"`
 		UserIssuing int       `bson:"usernum,omitempty"`
 		Based       string    `bson:"based,omitempty"`
 		Order       int       `bson:"order"`
+		Created     int       `bson:"create,omitempty"`
+		Changed     int       `bson:"change,omitempty"`
 	}
 
 	Collection struct {
@@ -333,4 +336,13 @@ func GetCurrentSequenceNumber(name string) int {
 		return theCounter.Value
 	}
 	return 0
+}
+
+func GetCurrentDate() int {
+	theTime := time.Now()
+
+	theDate := theTime.Year() * 1000
+	theDate += int(theTime.Month()) * 50
+	theDate += theTime.Day()
+	return theDate
 }

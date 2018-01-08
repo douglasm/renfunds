@@ -67,10 +67,9 @@ func main() {
 	// var (
 	// 	err error
 	// )
-	parts := strings.Split(key, "|")
-	crypto.SetKey([]byte(parts[0]))
-	clients.SetKey([]byte(parts[0]))
-	cookie.SetVars(parts[2], parts[3])
+	crypto.SetKey([]byte(key))
+
+	cookie.SetVars()
 
 	f, _ := os.OpenFile("./logs/ssafa.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	defer f.Close()
@@ -148,6 +147,8 @@ func main() {
 	users.SetRoutes(app)
 	clients.SetRoutes(app)
 	cases.SetRoutes(app)
+
+	clients.OrderClients()
 
 	// http://localhost:9039
 	thePort := fmt.Sprintf(":%d", config.Port)

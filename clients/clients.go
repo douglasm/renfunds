@@ -1,19 +1,21 @@
 package clients
 
 import (
-	// "log"
 	"fmt"
 	"html"
 	"html/template"
+	"log"
 	"net/http"
-	// "sort"
+	"strconv"
 	"strings"
+	"time"
 
 	// "github.com/gorilla/schema"
 	"github.com/kataras/iris"
 	"gopkg.in/mgo.v2/bson"
 
 	"ssafa/cases"
+	"ssafa/crypto"
 	"ssafa/db"
 	"ssafa/types"
 	"ssafa/users"
@@ -71,6 +73,12 @@ type (
 		Comment template.HTML
 		Name    template.HTML
 	}
+
+	CommentRec struct {
+		Id      int    `schema:"id"`
+		Comment string `schema:"comment"`
+		Commit  string `schema:"commit"`
+	}
 )
 
 func ListClients(ctx iris.Context) {
@@ -96,7 +104,6 @@ func ListClients(ctx iris.Context) {
 
 	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
-	// fmt.Println("We are logged in")
 	header.Title = "RF: Clients"
 	clientList, nextPage := GetList("", "", pageNum)
 
@@ -144,19 +151,19 @@ func editClientHandler(ctx iris.Context) {
 		}
 
 	case http.MethodPost:
-		fmt.Println("Got edit post")
-		fmt.Println(ctx.FormValues())
 		err = decoder.Decode(&details, ctx.FormValues())
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		err = details.checkClient()
 		if err == nil {
-			fmt.Println("Good customer")
 			if clientNum == 0 {
 				clientNum = details.saveClient()
+				OrderClients()
 			} else {
-				details.updateClient()
+				if details.updateClient() {
+					OrderClients()
+				}
 			}
 			ctx.Redirect(fmt.Sprintf("/client/%d", clientNum), http.StatusFound)
 			return
@@ -195,10 +202,10 @@ func searchClients(ctx iris.Context) {
 
 	data := ctx.FormValues()
 	err = decoder.Decode(&theSearch, data)
+	theSearch.Term = strings.ToLower(theSearch.Term)
 
 	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
-	// fmt.Println("We are logged in")
 	header.Title = "RF: Clients"
 	clientList, nextPage := GetList(theSearch.Type, theSearch.Term, pageNum)
 
@@ -249,12 +256,14 @@ func showClient(ctx iris.Context) {
 	}
 	// fmt.Println(theClient.Id)
 	header.Title = "RF: Client"
+
+	decryptClient(&theClient)
 	details.Id = theClient.Id
 	details.First = theClient.First
 	details.Surname = theClient.Surname
 	tempStr := html.EscapeString(theClient.Address)
 	tempStr = strings.TrimSpace(tempStr)
-	tempStr = strings.Replace(theClient.Address, "\r", "<br />", -1)
+	tempStr = strings.Replace(tempStr, "\r", "<br />", -1)
 	if len(tempStr) > 0 {
 		tempStr += "<br />"
 	}
@@ -262,7 +271,6 @@ func showClient(ctx iris.Context) {
 		tempStr += theClient.PostCode + "<br />"
 	}
 	details.Address = template.HTML(tempStr)
-	details.PostCode = theClient.PostCode
 	details.Phone = theClient.Phone
 	details.Mobile = theClient.Mobile
 	details.EMail = theClient.EMail
@@ -274,13 +282,61 @@ func showClient(ctx iris.Context) {
 	details.ServiceNum = theClient.ServiceNum
 	details.Unit = theClient.Unit
 	details.Comments = getComments(theClient.Comments)
-	details.Reports = getComments(theClient.Reports)
 
 	details.Cases = cases.GetCases(theClient.Id)
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
 	ctx.View("client.html")
+}
+
+func addComment(ctx iris.Context) {
+	var (
+		newComment CommentRec
+		clientNum  int
+		err        error
+	)
+
+	clientNum, err = ctx.Params().GetInt("clientnum")
+	if err != nil {
+		ctx.Redirect("/clients", http.StatusFound)
+		return
+	}
+
+	decoder.Decode(&newComment, ctx.FormValues())
+
+	if len(newComment.Comment) < 1 {
+		ctx.Redirect(fmt.Sprintf("/client/%d", clientNum), http.StatusFound)
+		return
+	}
+
+	theSession := ctx.Values().Get("session")
+
+	tempStr := crypto.Encrypt(newComment.Comment)
+
+	theTime := time.Now()
+	y := theTime.Year() * 1000
+	y += (int(theTime.Month()) * 50)
+	y += theTime.Day()
+
+	comment := bson.M{"comment": tempStr, "user": theSession.(users.Session).UserNumber, "date": y}
+	each := []bson.M{comment}
+
+	commentEach := bson.M{"$each": each, "$position": 0}
+
+	thePush := bson.M{"$push": bson.M{"comments": commentEach}}
+	// db.clients.update({"_id": 1375}, { $push: { comments: { $each: [ {date: 2018067, name: "Fred Smith"} ], $position: 0 } }})
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+
+	err = clientColl.UpdateId(clientNum, thePush)
+	if err != nil {
+		fmt.Println("Push error:", err)
+	}
+
+	ctx.Redirect(fmt.Sprintf("/client/%d", clientNum), http.StatusFound)
 }
 
 func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool) {
@@ -304,6 +360,7 @@ func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool
 	found := 0
 	iter := clientColl.Find(nil).Skip(skip).Limit(limit).Sort(db.KFieldClientsOrder).Iter()
 	for iter.Next(&theClient) {
+		decryptClient(&theClient)
 		if searchTerm != "" {
 			isValid := false
 			if strings.Contains(strings.ToLower(theClient.First), searchTerm) {
@@ -337,9 +394,14 @@ func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool
 }
 
 func (ce *ClientEdit) fillEdit(theClient db.Client) {
+	decryptClient(&theClient)
 	ce.Id = theClient.Id
 	ce.First = theClient.First
 	ce.Surname = theClient.Surname
+	d, m, y := dateToDMY(theClient.DOB)
+	if d != 0 && m != 0 {
+		ce.DOB = fmt.Sprintf("%02d/%02d/%04d", d, m, y)
+	}
 	ce.Phone = theClient.Phone
 	ce.Mobile = theClient.Mobile
 	ce.EMail = theClient.EMail
@@ -351,6 +413,16 @@ func (ce *ClientEdit) fillEdit(theClient db.Client) {
 }
 
 func getComments(comments []db.Comment) (retVal []CommentDisplay) {
+	var (
+		names   = map[int]string{}
+		theUser db.User
+		theName string
+		ok      bool
+	)
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	userColl := session.DB(db.MainDB).C(db.CollectionUsers)
+
 	for _, item := range comments {
 		newComment := CommentDisplay{}
 		if item.Date != 0 {
@@ -360,10 +432,25 @@ func getComments(comments []db.Comment) (retVal []CommentDisplay) {
 			y := item.Date / 1000
 			newComment.Date = fmt.Sprintf("%d/%02d/%04d ", d, m, y)
 		}
-		newComment.Comment = template.HTML(html.EscapeString(item.Comment))
-		if len(item.Name) > 0 {
-			newComment.Name = template.HTML(html.EscapeString(item.Name))
+
+		tempStr := crypto.Decrypt(item.Comment)
+		newComment.Comment = template.HTML(html.EscapeString(tempStr))
+		if item.User != 0 {
+			theName, ok = names[item.User]
+			if !ok {
+				err := userColl.FindId(item.User).One(&theUser)
+				if err == nil {
+					theName = theUser.First + " " + theUser.Surname
+					names[item.User] = theName
+				}
+			}
 		}
+		if len(theName) == 0 {
+			if len(item.Name) > 0 {
+				theName = item.Name
+			}
+		}
+		newComment.Name = template.HTML(html.EscapeString(theName))
 		retVal = append(retVal, newComment)
 	}
 	return
@@ -376,6 +463,78 @@ func (ce *ClientEdit) checkClient() error {
 	if len(ce.Surname) == 0 {
 		return ErrorNoSurname
 	}
+
+	if len(ce.NINum) > 0 {
+		err := checkNiNum(ce.NINum)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(ce.DOB) > 0 {
+		parts := strings.Split(ce.DOB, "/")
+		if len(parts) != 3 {
+			return ErrorDateBadFormat
+		}
+
+		d, err := strconv.Atoi(parts[0])
+		if err != nil {
+			return ErrorDateBadDay
+		}
+		if d < 1 {
+			return ErrorDateLowDay
+		}
+
+		m, err := strconv.Atoi(parts[1])
+		if err != nil {
+			return ErrorDateBadMonth
+		}
+		if m < 1 {
+			return ErrorDateLowMonth
+		}
+		if m > 12 {
+			return ErrorDateHighMonth
+		}
+
+		y, err := strconv.Atoi(parts[2])
+		if err != nil {
+			return ErrorDateBadYear
+		}
+
+		theTime := time.Now()
+		if y < theTime.Year()-112 {
+			return ErrorDateLowYear
+		}
+
+		if y > theTime.Year()-18 {
+			return ErrorDateHighYear
+		}
+
+		if d > 31 {
+			return ErrorDateHighDay
+		}
+
+		// Check for the number of days in a month
+		switch m {
+		case 2:
+			if y%4 != 0 {
+				if d > 28 {
+					return ErrorDateHighDay
+				}
+			} else {
+				if d > 29 {
+					return ErrorDateHighDay
+				}
+			}
+		case 4, 6, 9, 11:
+			if d > 30 {
+				return ErrorDateHighDay
+			}
+		}
+	}
+
+	ce.PostCode = strings.ToUpper(ce.PostCode)
+	ce.NINum = strings.ToUpper(ce.NINum)
 
 	return nil
 }
@@ -390,28 +549,35 @@ func (ce *ClientEdit) saveClient() int {
 	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
 
 	theClient.Id = db.GetNextSequence(db.CollectionClients)
-	theClient.First = ce.First
-	theClient.Surname = ce.Surname
-	theClient.Phone = ce.Phone
-	theClient.Mobile = ce.Mobile
-	theClient.EMail = ce.EMail
-	theClient.Address = ce.Address
-	theClient.PostCode = ce.PostCode
-	theClient.NINum = ce.NINum
-	theClient.ServiceNum = ce.ServiceNum
+	theClient.First = crypto.Encrypt(ce.First)
+	theClient.Surname = crypto.Encrypt(ce.Surname)
+	theClient.Phone = crypto.Encrypt(ce.Phone)
+	theClient.Mobile = crypto.Encrypt(ce.Mobile)
+	theClient.EMail = crypto.Encrypt(ce.EMail)
+	theClient.Address = crypto.Encrypt(ce.Address)
+	theClient.PostCode = crypto.Encrypt(ce.PostCode)
+	theClient.NINum = crypto.Encrypt(ce.NINum)
+	theClient.ServiceNum = crypto.Encrypt(ce.ServiceNum)
 	theClient.Unit = ce.Unit
 
-	err := clientColl.Insert(&theClient)
+	theClient.DOB = parseDateString(ce.DOB)
+
+	theClient.Created = db.GetCurrentDate()
+	theClient.Changed = theClient.Created
+
+	fmt.Printf("%+v\n", theClient)
+	err := clientColl.Insert(theClient)
 	if err != nil {
-		println("Client save error:", err)
+		fmt.Println("Client save error:", err)
 	}
 
 	return theClient.Id
 }
 
-func (ce *ClientEdit) updateClient() {
+func (ce *ClientEdit) updateClient() bool {
 	var (
 		theClient db.Client
+		retVal    bool
 	)
 
 	session := db.MongoSession.Copy()
@@ -419,26 +585,38 @@ func (ce *ClientEdit) updateClient() {
 	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
 
 	err := clientColl.FindId(ce.Id).One(&theClient)
+	decryptClient(&theClient)
 	sets := bson.M{}
 	unsets := bson.M{}
 
 	if ce.First != theClient.First {
-		sets[db.KFieldClientsFirst] = ce.First
+		sets[db.KFieldClientsFirst] = crypto.Encrypt(ce.First)
+		retVal = true
 	}
 	if ce.Surname != theClient.Surname {
-		sets[db.KFieldClientsSurname] = ce.Surname
+		sets[db.KFieldClientsSurname] = crypto.Encrypt(ce.Surname)
+		retVal = true
 	}
+
 	if ce.Address != theClient.Address {
 		if len(ce.Address) > 0 {
-			sets[db.KFieldClientsAddress] = ce.Address
+			sets[db.KFieldClientsAddress] = crypto.Encrypt(ce.Address)
 		} else {
 			unsets[db.KFieldClientsAddress] = 1
 		}
 	}
 
+	if ce.PostCode != theClient.PostCode {
+		if len(ce.PostCode) > 0 {
+			sets[db.KFieldClientsPostCode] = crypto.Encrypt(ce.PostCode)
+		} else {
+			unsets[db.KFieldClientsPostCode] = 1
+		}
+	}
+
 	if ce.Phone != theClient.Phone {
 		if len(ce.Phone) > 0 {
-			sets[db.KFieldClientsPhone] = ce.Phone
+			sets[db.KFieldClientsPhone] = crypto.Encrypt(ce.Phone)
 		} else {
 			unsets[db.KFieldClientsPhone] = 1
 		}
@@ -446,7 +624,7 @@ func (ce *ClientEdit) updateClient() {
 
 	if ce.Mobile != theClient.Mobile {
 		if len(ce.Mobile) > 0 {
-			sets[db.KFieldClientsMobile] = ce.Mobile
+			sets[db.KFieldClientsMobile] = crypto.Encrypt(ce.Mobile)
 		} else {
 			unsets[db.KFieldClientsMobile] = 1
 		}
@@ -454,7 +632,7 @@ func (ce *ClientEdit) updateClient() {
 
 	if ce.EMail != theClient.EMail {
 		if len(ce.EMail) > 0 {
-			sets[db.KFieldClientsEMail] = ce.EMail
+			sets[db.KFieldClientsEMail] = crypto.Encrypt(ce.EMail)
 		} else {
 			unsets[db.KFieldClientsEMail] = 1
 		}
@@ -462,7 +640,7 @@ func (ce *ClientEdit) updateClient() {
 
 	if ce.NINum != theClient.NINum {
 		if len(ce.NINum) > 0 {
-			sets[db.KFieldClientsNINum] = ce.NINum
+			sets[db.KFieldClientsNINum] = crypto.Encrypt(ce.NINum)
 		} else {
 			unsets[db.KFieldClientsNINum] = 1
 		}
@@ -470,7 +648,7 @@ func (ce *ClientEdit) updateClient() {
 
 	if ce.ServiceNum != theClient.ServiceNum {
 		if len(ce.ServiceNum) > 0 {
-			sets[db.KFieldClientsServiceNum] = ce.ServiceNum
+			sets[db.KFieldClientsServiceNum] = crypto.Encrypt(ce.ServiceNum)
 		} else {
 			unsets[db.KFieldClientsServiceNum] = 1
 		}
@@ -484,6 +662,15 @@ func (ce *ClientEdit) updateClient() {
 		}
 	}
 
+	val := parseDateString(ce.DOB)
+	if val != theClient.DOB {
+		if val != 0 {
+			sets[db.KFieldClientsDOB] = val
+		} else {
+			unsets[db.KFieldClientsDOB] = 1
+		}
+	}
+
 	update := bson.M{}
 	if len(sets) > 0 {
 		if len(unsets) > 0 {
@@ -494,12 +681,46 @@ func (ce *ClientEdit) updateClient() {
 
 	} else {
 		if len(unsets) == 0 {
-			return
+			return false
 		}
 		update = bson.M{"$unset": unsets}
 	}
+
+	theClient.Changed = db.GetCurrentDate()
+
 	err = clientColl.UpdateId(ce.Id, update)
 	if err != nil {
-		fmt.Println("Update error:", err)
+		log.Println("Update error:", err)
 	}
+	return retVal
 }
+
+func checkNiNum(nINum string) error {
+	if len(nINum) != 9 {
+		return ErrorNINumWrongLength
+	}
+	nINum = strings.ToUpper(nINum)
+	for i, ch := range nINum {
+		switch i {
+		case 0, 1, 8:
+			if ch < 'A' {
+				return ErrorNINumBadFormat
+			}
+			if ch > 'Z' {
+				return ErrorNINumBadFormat
+			}
+
+		case 2, 3, 4, 5, 6, 7:
+			if ch < '0' {
+				return ErrorNINumBadFormat
+			}
+			if ch > '9' {
+				return ErrorNINumBadFormat
+			}
+		}
+	}
+	return nil
+}
+
+// db.clients.update({"_id": 1375}, { $push: { comments: { $each: [ {date: 2018067, name: "Fred Smith"} ], $position: 0 } }})
+// db.clients.update({"_id": 1375}, { $pop: { comments: -1 }})

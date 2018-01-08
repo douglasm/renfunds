@@ -26,6 +26,9 @@
                 <br />
             </div>
         </div> <!-- end of row -->
+        <div class="row">
+            <div class="grid_8">
+        {{if .Details.Cases}}
         <table>
             <thead>
                 <th>Case number</th>
@@ -44,6 +47,14 @@
                 {{end}}
             </tbody>
         </table>
+        {{else}}
+            <hr />
+            <p>
+                No cases
+            </p>
+        {{end}}
+            </div>
+        </div>
         <table>
             <thead>
                 <th>Date</th>
@@ -51,6 +62,16 @@
                 <th>Case Worker</th>
             </thead>
             <tbody>
+                <form action="/commentclient/{{.Details.Id}}" method="post">
+                    <tr class="commentform">
+                        <td></td>
+                        <td><textarea name="comment" placeholder="New comment" rows="3"></textarea></td>
+                        <td>
+                            <input type="hidden" name="id" value="{{.Details.Id}}">
+                            <input name="commit" type="submit" value="Add comment">
+                        </td>
+                    </tr>
+                </form>
                 {{range $element := .Details.Comments}}
                     <tr>
                         <td>{{$element.Date}}</td>
@@ -60,26 +81,7 @@
                 {{end}}
             </tbody>
         </table>
-        <table>
-            <thead>
-                <th>Date</th>
-                <th>Report</th>
-                <th>Case Worker</th>
-            </thead>
-            <tbody>
-                {{range $element := .Details.Reports}}
-                    <tr>
-                        <td>{{$element.Date}}</td>
-                        <td>{{$element.Comment}}</td>
-                        <td>{{$element.Name}}</td>
-                    </tr>
-                {{end}}
-            </tbody>
-        </table>
     </div> <!-- end of grid_9 -->
-    <div class="grid_3">
-        {{template "clientsearch.html" .}}
-    </div>
 </div> <!-- end of row -->
 
 

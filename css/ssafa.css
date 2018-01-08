@@ -1806,7 +1806,7 @@ Mobile (portrait 300px)
     display: block;
   }
 }
-/* line 18, ../scss/speakers.scss */
+/* line 18, ../scss/ssafa.scss */
 ul, menu, dir {
   display: block;
   list-style-type: disc;
@@ -1817,25 +1817,25 @@ ul, menu, dir {
   -webkit-padding-start: 10px;
 }
 
-/* line 28, ../scss/speakers.scss */
+/* line 28, ../scss/ssafa.scss */
 .error {
   font-weight: bold;
   color: red;
 }
 
-/* line 33, ../scss/speakers.scss */
+/* line 33, ../scss/ssafa.scss */
 .ta2 {
   font-family: sans-serif;
   font-size: 1em;
   width: 90%;
 }
 
-/* line 40, ../scss/speakers.scss */
+/* line 40, ../scss/ssafa.scss */
 .tagcheck span {
   width: 20em;
 }
 
-/* line 45, ../scss/speakers.scss */
+/* line 45, ../scss/ssafa.scss */
 fieldset.group {
   margin: 0;
   padding: 0;
@@ -1843,7 +1843,7 @@ fieldset.group {
   margin-bottom: 1.25em;
   padding: 0;
 }
-/* line 52, ../scss/speakers.scss */
+/* line 52, ../scss/ssafa.scss */
 fieldset.group legend {
   margin: 0;
   padding: 0;
@@ -1853,24 +1853,24 @@ fieldset.group legend {
   font-size: 100%;
   color: black;
 }
-/* line 62, ../scss/speakers.scss */
+/* line 62, ../scss/ssafa.scss */
 fieldset.group ul.checkbox {
   margin: 0;
   padding: 0;
   margin-left: 0px;
   list-style: none;
 }
-/* line 68, ../scss/speakers.scss */
+/* line 68, ../scss/ssafa.scss */
 fieldset.group ul.checkbox li {
   border: 1px transparent solid;
   display: inline-block;
   width: 15em;
 }
-/* line 73, ../scss/speakers.scss */
+/* line 73, ../scss/ssafa.scss */
 fieldset.group ul.checkbox li input {
   margin-right: .25em;
 }
-/* line 79, ../scss/speakers.scss */
+/* line 79, ../scss/ssafa.scss */
 fieldset.group ul.checkbox li:hover,
 fieldset.group ul.checkbox li.focus {
   background-color: lightyellow;
@@ -1878,9 +1878,103 @@ fieldset.group ul.checkbox li.focus {
   width: 15em;
 }
 
-/* line 113, ../scss/speakers.scss */
+/* line 113, ../scss/ssafa.scss */
 ul.checkbox li label {
   margin-left: 10px;
+}
+
+/* line 124, ../scss/ssafa.scss */
+.inputform input[type=text] {
+  padding: 5px;
+  border: 2px solid #ccc;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  background-color: #FFF;
+  font-family: sans-serif;
+  font-size: .9em;
+  line-height: 1.2em;
+  color: #111;
+}
+/* line 136, ../scss/ssafa.scss */
+.inputform input[type=text]:focus {
+  border-color: #333;
+}
+/* line 140, ../scss/ssafa.scss */
+.inputform textarea {
+  padding: 5px;
+  border: 2px solid #ccc;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  background-color: #FFF;
+  font-family: sans-serif;
+  font-size: .9em;
+  line-height: 1.2em;
+  color: #111;
+}
+/* line 152, ../scss/ssafa.scss */
+.inputform textarea:focus {
+  border-color: #333;
+}
+/* line 156, ../scss/ssafa.scss */
+.inputform input[type=submit] {
+  padding: 5px 15px;
+  background: #ccc;
+  border: 0 none;
+  cursor: pointer;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+/* line 167, ../scss/ssafa.scss */
+.commentform input[type=text] {
+  padding: 5px;
+  border: 2px solid #ccc;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  background-color: #FFF;
+  font-family: sans-serif;
+  font-size: .9em;
+  line-height: 1.2em;
+  color: #111;
+}
+/* line 179, ../scss/ssafa.scss */
+.commentform input[type=text]:focus {
+  border-color: #333;
+}
+/* line 183, ../scss/ssafa.scss */
+.commentform input[type=commit] {
+  padding-bottom: 1em;
+}
+/* line 187, ../scss/ssafa.scss */
+.commentform textarea {
+  width: 90%;
+  padding: 5px;
+  border: 2px solid #ccc;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  background-color: #FFF;
+  font-family: sans-serif;
+  font-size: .9em;
+  line-height: 1.2em;
+  color: #111;
+}
+/* line 200, ../scss/ssafa.scss */
+.commentform textarea:focus {
+  border-color: #333;
+}
+/* line 204, ../scss/ssafa.scss */
+.commentform input[type=submit] {
+  padding: 5px 15px;
+  background: #ccc;
+  border: 0 none;
+  cursor: pointer;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+/* line 215, ../scss/ssafa.scss */
+.righthead th {
+  text-align: right;
 }
 
 /* ------------------------------------------

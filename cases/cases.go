@@ -21,7 +21,6 @@ type (
 		ClientName string
 		ClientNum  int
 		Reports    []string
-		Comments   []string
 	}
 )
 
@@ -82,10 +81,7 @@ func showCase(ctx iris.Context) {
 		if len(item.Name) > 0 {
 			theDate += " - " + item.Name
 		}
-		details.Comments = append(details.Comments, theDate)
-	}
-	for _, item := range theClient.Reports {
-		details.Reports = append(details.Reports, item.Comment)
+		details.Reports = append(details.Reports, theDate)
 	}
 
 	// details.Cases = cases.GetCases(theClient.Id)

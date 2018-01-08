@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	// "log"
 
@@ -11,8 +12,8 @@ import (
 	"github.com/kataras/iris"
 	"gopkg.in/mgo.v2/bson"
 	// "gopkg.in/mgo.v2"
-	// "ssafa/crypto"
 
+	"ssafa/crypto"
 	"ssafa/db"
 )
 
@@ -28,13 +29,24 @@ type (
 )
 
 var (
-	key     []byte
 	decoder = schema.NewDecoder()
 )
 
 var (
-	ErrorNoFirst   = errors.New("No first name")
-	ErrorNoSurname = errors.New("No surname")
+	ErrorNoFirst          = errors.New("No first name")
+	ErrorNoSurname        = errors.New("No surname")
+	ErrorNINumWrongLength = errors.New("The NI Number should be 9 characters")
+	ErrorNINumBadFormat   = errors.New("The NI Number should be 2 letters, 6 digits and 1 letter")
+	ErrorDateBadFormat    = errors.New("The date format is wrong")
+	ErrorDateBadDay       = errors.New("The day value is wrong")
+	ErrorDateBadMonth     = errors.New("The month value is wrong")
+	ErrorDateBadYear      = errors.New("The year value is wrong")
+	ErrorDateLowDay       = errors.New("The day is too low")
+	ErrorDateLowMonth     = errors.New("The month is too low")
+	ErrorDateLowYear      = errors.New("The aeary is too low")
+	ErrorDateHighDay      = errors.New("The day is too high")
+	ErrorDateHighMonth    = errors.New("The month is too high")
+	ErrorDateHighYear     = errors.New("The aeary is too high")
 )
 
 // func init() {
@@ -59,6 +71,7 @@ func SetRoutes(app *iris.Application) {
 	app.Get("/clients/{pagenum:int}", ListClients)
 	app.Post("/searchclient", searchClients)
 	app.Post("/searchclient/{pagenum:int}", searchClients)
+	app.Post("/commentclient/{clientnum:int}", addComment)
 	// app.Get("/client/{clientnum:int}", showClient)
 }
 
@@ -122,10 +135,6 @@ func (s ByClientName) Less(i, j int) bool {
 	return s.NameList[i].First < s.NameList[j].First
 }
 
-func SetKey(theKey []byte) {
-	key = theKey
-}
-
 func dateToDMY(theDate int) (day, month, year int) {
 	day = theDate % 50
 	theDate -= day
@@ -138,4 +147,28 @@ func dateToDMY(theDate int) (day, month, year int) {
 		year += 2000
 	}
 	return
+}
+
+func decryptClient(theClient *db.Client) {
+	theClient.First = crypto.Decrypt(theClient.First)
+	theClient.Surname = crypto.Decrypt(theClient.Surname)
+	theClient.Address = crypto.Decrypt(theClient.Address)
+	theClient.PostCode = crypto.Decrypt(theClient.PostCode)
+	theClient.Phone = crypto.Decrypt(theClient.Phone)
+	theClient.Mobile = crypto.Decrypt(theClient.Mobile)
+	theClient.EMail = crypto.Decrypt(theClient.EMail)
+	theClient.NINum = crypto.Decrypt(theClient.NINum)
+	theClient.ServiceNum = crypto.Decrypt(theClient.ServiceNum)
+}
+
+func parseDateString(theDate string) int {
+	theDate = strings.TrimSpace(theDate)
+	if len(theDate) == 0 {
+		return 0
+	}
+	parts := strings.Split(theDate, "/")
+	d, _ := strconv.Atoi(parts[0])
+	m, _ := strconv.Atoi(parts[1])
+	y, _ := strconv.Atoi(parts[2])
+	return (y * 1000) + (m * 50) + d
 }

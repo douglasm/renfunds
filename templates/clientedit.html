@@ -4,122 +4,133 @@
 {{template "navbar.html" .}}
 
 <div class="row">
-    <div class="grid_9">
+    <div class="grid_12">
         <h4>{{.Details.First}} {{.Details.Surname}}</h4>
         {{template "error_display.html" .}}
-        <form class="login_form" action="/editclient/{{.Details.Id}}" method="post">
+        <form class="inputform" action="/editclient/{{.Details.Id}}" method="post">
             <div class="row">
-                <div class="grid_8">
+                <div class="grid_10">
                     <div class="grid_2">
                         <strong>First Name:</strong>
                     </div>
-                    <div class="grid_6>">
+                    <div class="grid_7>">
                         <input type="text" name="first" placeholder="First Name(s)" size="30" value="{{.Details.First}}">
                     </div>
                 </div>
-            </div>
+            </div> <!-- end of row -->
             <div class="row">
-                <div class="grid_8">
+                <div class="grid_10">
                     <div class="grid_2">
                         <strong>Surname:</strong>
                     </div>
-                    <div class="grid_6>">
+                    <div class="grid_7>">
                         <input type="text" name="surname" placeholder="Surname" size="30" value="{{.Details.Surname}}">
                     </div>
                 </div>
-            </div>
+            </div> <!-- end of row -->
             <div class="row">
-                <div class="grid_8">
+                <div class="grid_10">
                     <div class="grid_2">
                         <strong>Phone:</strong>
                     </div>
-                    <div class="grid_6>">
+                    <div class="grid_7>">
                         <input type="text" name="phone" placeholder="Phone" size="30" value="{{.Details.Phone}}">
                     </div>
                 </div>
-            </div>
+            </div> <!-- end of row -->
             <div class="row">
-                <div class="grid_8">
+                <div class="grid_10">
                     <div class="grid_2">
                         <strong>Mobile:</strong>
                     </div>
-                    <div class="grid_6>">
+                    <div class="grid_7>">
                         <input type="text" name="mobile" placeholder="Mobile" size="30" value="{{.Details.Mobile}}">
                     </div>
                 </div>
-            </div>
+            </div> <!-- end of row -->
             <div class="row">
-                <div class="grid_8">
+                <div class="grid_10">
                     <div class="grid_2">
-                        <strong>Address:</strong><br />
+                        <strong>E Mail:</strong>
                     </div>
-                    <div class="grid_6">
-                        <textarea name="address" placeholder="Address" rows="4" cols="30" value="{{.Details.Address}}">{{.Details.Address}}</textarea>
+                    <div class="grid_7>">
+                        <input type="text" name="email" placeholder="E Mail" size="30" value="{{.Details.EMail}}">
                     </div>
-                </div>
-            </div>
+                </div> <!-- end of grid_10 -->
+            </div> <!-- end of row -->
             <div class="row">
-                <div class="grid_8">
+                <div class="grid_10">
                     <div class="grid_2">
-                        <strong>Postcode:</strong><br />
+                        <strong>Address:</strong>
                     </div>
-                    <div class="grid_6">
-                        <input type="text" name="address" placeholder="postcode" size="30" value="{{.Details.PostCode}}">
+                    <div class="grid_7">
+<textarea name="address" placeholder="Address" rows="4" cols="29" value="{{.Details.Address}}">{{.Details.Address}}</textarea>
                     </div>
-                </div>
-            </div>
+                </div> <!-- end of grid_10 -->
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Postcode:</strong>
+                    </div>
+                    <div class="grid_7">
+<input type="text" name="postcode" placeholder="postcode" size="30" value="{{.Details.PostCode}}">
+                    </div>
+                </div> <!-- end of grid_10 -->
+            </div> <!-- end of row -->
 
             <div class="row">
-                <div class="grid_8">
+                <div class="grid_10">
                     <div class="grid_2">
                         <strong>Date of Birth:</strong>
                     </div>
-                    <div class="grid_6>">
-                        <input type="text" name="dob" placeholder="Date of Birth" size="30" value="{{.Details.DOB}}">
+                    <div class="grid_7>">
+                        <input type="text" name="dob" placeholder="Date of Birth dd/mm/yyyy" size="30" value="{{.Details.DOB}}">
                     </div>
-                </div>
-            </div>
+                </div> <!-- end of grid_10 -->
+            </div> <!-- end of row -->
             <div class="row">
-                <div class="grid_8">
+                <div class="grid_10">
                     <div class="grid_2">
                         <strong>NI Number:</strong>
                     </div>
-                    <div class="grid_6>">
+                    <div class="grid_7>">
                         <input type="text" name="ninum" placeholder="NI Number" size="30" value="{{.Details.NINum}}">
                     </div>
-                </div>
-            </div>
+                </div> <!-- end of grid_10 -->
+            </div> <!-- end of row -->
             <div class="row">
-                <div class="grid_8">
+                <div class="grid_10">
                     <div class="grid_2">
                         <strong>Service Number:</strong>
                     </div>
-                    <div class="grid_6>">
+                    <div class="grid_7>">
                         <input type="text" name="servicenum" placeholder="Service Number" size="30" value="{{.Details.ServiceNum}}">
                     </div>
-                </div>
-            </div>
+                </div> <!-- end of grid_10 -->
+            </div> <!-- end of row -->
             <div class="row">
-                <div class="grid_8">
+                <div class="grid_10">
                     <div class="grid_2">
                         <strong>Unit:</strong>
                     </div>
-                    <div class="grid_6>">
+                    <div class="grid_7>">
                         <input type="text" name="unit" placeholder="Unit" size="30" value="{{.Details.Unit}}">
                     </div>
-                </div>
-            </div>
+                </div> <!-- end of grid_10 -->
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <input name="commit" type="submit" value="Save">
+                </div> <!-- end of grid_10 -->
+            </div> <!-- end of row -->
             <input type="hidden" name="id" value="{{.Details.Id}}">
             <input type="hidden" name="checkfield" value="{{.Checkfield}}">
-            <p><input name="commit" type="submit" value="Save"></p>
         </form>
         {{range $element := .Details.Comments}}
             {{$element}}<br />
         {{end}}
-    </div> <!-- end of grid_9 -->
-    <div class="grid_3">
-        {{template "clientsearch.html" .}}
-    </div>
+    </div> <!-- end of grid_12 -->
 </div> <!-- end of row -->
 
 

@@ -35,6 +35,10 @@ func SetKey(theKey []byte) {
 }
 
 func Encrypt(theText string) string {
+	if len(theText) == 0 {
+		return ""
+	}
+
 	// key := []byte("example key 1234")
 	// key := []byte("Wroy7lzjLaXnAlND")
 	for len(theText)%aes.BlockSize != 0 {

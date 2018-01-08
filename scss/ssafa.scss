@@ -120,4 +120,101 @@ ul.checkbox li label {
 //   width: 12em; 
 // } 
 
+.inputform {
+    input[type=text] {
+        padding:5px; 
+        border:2px solid #ccc; 
+        -webkit-border-radius: 5px;
+        border-radius: 5px;
+        background-color:#FFF;
+        font-family:sans-serif;
+        font-size:.9em;
+        line-height:1.2em;
+        color:#111;
+    }
+
+    input[type=text]:focus {
+        border-color:#333;
+    }
+
+    textarea {
+        padding:5px; 
+        border:2px solid #ccc; 
+        -webkit-border-radius: 5px;
+        border-radius: 5px;
+        background-color:#FFF;
+        font-family:sans-serif;
+        font-size:.9em;
+        line-height:1.2em;
+        color:#111;
+    }
+
+    textarea:focus {
+        border-color:#333;
+    }
+
+    input[type=submit] {
+        padding:5px 15px; 
+        background:#ccc; 
+        border:0 none;
+        cursor:pointer;
+        -webkit-border-radius: 5px;
+        border-radius: 5px; 
+    }
+}
+
+.commentform {
+    input[type=text] {
+        padding:5px; 
+        border:2px solid #ccc; 
+        -webkit-border-radius: 5px;
+        border-radius: 5px;
+        background-color:#FFF;
+        font-family:sans-serif;
+        font-size:.9em;
+        line-height:1.2em;
+        color:#111;
+    }
+
+    input[type=text]:focus {
+        border-color:#333;
+    }
+
+    input[type=commit] {
+        padding-bottom: 1em;
+    }
+
+    textarea {
+        width: 90%;
+        padding:5px; 
+        border:2px solid #ccc; 
+        -webkit-border-radius: 5px;
+        border-radius: 5px;
+        background-color:#FFF;
+        font-family:sans-serif;
+        font-size:.9em;
+        line-height:1.2em;
+        color:#111;
+    }
+
+    textarea:focus {
+        border-color:#333;
+    }
+
+    input[type=submit] {
+        padding:5px 15px; 
+        background:#ccc; 
+        border:0 none;
+        cursor:pointer;
+        -webkit-border-radius: 5px;
+        border-radius: 5px; 
+    }
+}
+
+.righthead {
+    th {
+        text-align: right;
+    }
+}
+
 @import 'buttons';
