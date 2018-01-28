@@ -85,13 +85,6 @@ func main() {
 	defer db.MongoSession.Close()
 	db.MongoSession.SetMode(mgo.Monotonic, true)
 
-	// generateKeys()
-	// f, _ := os.OpenFile("./logs/ssafa.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	// defer f.Close()
-
-	// log.SetOutput(f)
-	// log.Println("Application starting")
-
 	app := iris.New() // defaults to these
 
 	r, close := newRequestLogger()
@@ -220,7 +213,6 @@ func authCheck(ctx iris.Context) {
 		// }
 	}
 
-	ctx.Values().Set("fred", "Hello there")
 	ctx.Next()
 }
 

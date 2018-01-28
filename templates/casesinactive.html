@@ -1,0 +1,49 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h4>Inactive cases</h4>
+        <div class="button-group">
+            <a href="/cases" class="button">All cases</a>
+            <a href="/casesopen" class="button">Open cases</a>
+            <a href="/casesunassign" class="button">Unassigned</a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="grid_12">
+        <div class="row">
+            <div class="grid_9">
+                <table>
+                    <thead>
+                        <th>Case</th>
+                        <th>CMS</th>
+                        <th>Client</th>
+                        <th>Case Worker</th>
+                        <th>Updated</th>
+                    </thead>
+                    <tbody>
+                        {{range $elem := .Details}}
+                        <tr>
+                            <td><a href="/case/{{$elem.Id}}">{{$elem.CaseNumber}}</a></td>
+                            <td>{{$elem.CMSNumber}}</td>
+                            <td><a href="/client/{{$elem.ClientId}}">{{$elem.Name}}</a></td>
+                            <td>{{$elem.CaseWorker}}</td>
+                            <td>{{$elem.Updated}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                    
+                </table>
+            </div> <!-- end of grid_9 -->
+            {{template "casesearch.html" .}}
+        </div> <!-- end of row -->
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>

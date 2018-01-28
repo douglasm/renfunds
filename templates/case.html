@@ -5,18 +5,63 @@
 
 <div class="row">
     <div class="grid_12">
-        <div class="row">
-            <div class="grid_9">
-                <h4><a href="/client/{{.Details.ClientNum}}">{{.Details.ClientName}}</a></h4>
-                {{range $element := .Details.Reports}}
-                    {{$element}}<br />
-                {{end}}
-                {{range $element := .Details.Comments}}
-                    {{$element}}<br />
-                {{end}}
-            </div> <!-- end of grid_9 -->
-            {{template "clientsearch.html" .}}
-        </div> <!-- end of row -->
+        <!-- <div class="row"> -->
+            <!-- <div class="grid_9"> -->
+                <div class="row">
+                    <div class="grid_2">
+                        <h5>{{.Details.CaseNumber}}</h5>
+                    </div>
+                    <div class="grid_2">
+                        <div class="button-group">
+                            <a href="/caseedit/{{.Details.Id}}" class="button">Edit</a>
+                        </div>
+                    </div>
+                    <div class="grid_4">
+                    {{if .Header.Admin}}
+                        <div class="button-group">
+                            {{if .Details.Open}}
+                            <a href="/caseclosed/{{.Details.Id}}" class="button">Close</a>
+                            {{else}}
+                            <a href="/caseopened/{{.Details.Id}}" class="button">Open</a>
+                            {{end}}
+                        </div>
+                    {{end}}
+                    </div>
+                </div> <!-- end of row -->
+                {{template "rowitemlink.html" .Details.ClientName}}
+                {{template "rowitem.html" .Details.CaseWorker}}
+                {{template "rowitem.html" .Details.CMSNumber}}
+                {{template "rowitem.html" .Details.Opened}}
+                {{template "rowitem.html" .Details.Updated}}
+                {{template "rowitem.html" .Details.State}}
+                <table>
+                    <thead>
+                        <th>Date</th>
+                        <th>Comment</th>
+                        <th>Case Worker</th>
+                    </thead>
+                    <tbody>
+                        <form action="/commentcase/{{.Details.Id}}" method="post">
+                            <tr class="commentform">
+                                <td></td>
+                                <td><textarea name="comment" placeholder="New comment" rows="3"></textarea></td>
+                                <td>
+                                    <input type="hidden" name="id" value="{{.Details.Id}}">
+                                    <input name="commit" type="submit" value="Add comment">
+                                </td>
+                            </tr>
+                        </form>
+                        {{range $element := .Details.Reports}}
+                            <tr>
+                                <td>{{$element.Date}}</td>
+                                <td>{{$element.Comment}}</td>
+                                <td>{{$element.Name}}</td>
+                            </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            <!-- </div> end of grid_9 -->
+        <!-- /div> < end of row -->
     </div> <!-- end of grid_12 -->
 </div> <!-- end of row -->
 

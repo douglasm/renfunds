@@ -45,39 +45,26 @@ type (
 		Unit       string
 		Address    template.HTML
 		PostCode   string
-		Comments   []CommentDisplay
-		Reports    []CommentDisplay
+		Comments   []cases.CommentDisplay
 		Cases      []cases.CaseList
 	}
 
 	ClientEdit struct {
-		Id         int              `schema:"id"`
-		First      string           `schema:"first"`
-		Surname    string           `schema:"surname"`
-		DOB        string           `schema:"dob"`
-		NINum      string           `schema:"ninum"`
-		ServiceNum string           `schema:"servicenum"`
-		Unit       string           `schema:"unit"`
-		Phone      string           `schema:"phone"`
-		Mobile     string           `schema:"mobile"`
-		EMail      string           `schema:"email"`
-		Address    string           `schema:"address"`
-		PostCode   string           `schema:"postcode"`
-		Comments   []CommentDisplay `schema:"comments"`
-		Checkfield string           `schema:"checkfield"`
-		Commit     string           `schema:"commit"`
-	}
-
-	CommentDisplay struct {
-		Date    string
-		Comment template.HTML
-		Name    template.HTML
-	}
-
-	CommentRec struct {
-		Id      int    `schema:"id"`
-		Comment string `schema:"comment"`
-		Commit  string `schema:"commit"`
+		Id         int                    `schema:"id"`
+		First      string                 `schema:"first"`
+		Surname    string                 `schema:"surname"`
+		DOB        string                 `schema:"dob"`
+		NINum      string                 `schema:"ninum"`
+		ServiceNum string                 `schema:"servicenum"`
+		Unit       string                 `schema:"unit"`
+		Phone      string                 `schema:"phone"`
+		Mobile     string                 `schema:"mobile"`
+		EMail      string                 `schema:"email"`
+		Address    string                 `schema:"address"`
+		PostCode   string                 `schema:"postcode"`
+		Comments   []cases.CommentDisplay `schema:"comments"`
+		Checkfield string                 `schema:"checkfield"`
+		Commit     string                 `schema:"commit"`
 	}
 )
 
@@ -283,16 +270,17 @@ func showClient(ctx iris.Context) {
 	details.Unit = theClient.Unit
 	details.Comments = getComments(theClient.Comments)
 
-	details.Cases = cases.GetCases(theClient.Id)
+	allCases := getCases(theClient.Id)
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
+	ctx.ViewData("Cases", allCases)
 	ctx.View("client.html")
 }
 
 func addComment(ctx iris.Context) {
 	var (
-		newComment CommentRec
+		newComment cases.CommentRec
 		clientNum  int
 		err        error
 	)
@@ -412,45 +400,10 @@ func (ce *ClientEdit) fillEdit(theClient db.Client) {
 	ce.Unit = theClient.Unit
 }
 
-func getComments(comments []db.Comment) (retVal []CommentDisplay) {
-	var (
-		names   = map[int]string{}
-		theUser db.User
-		theName string
-		ok      bool
-	)
-	session := db.MongoSession.Copy()
-	defer session.Close()
-	userColl := session.DB(db.MainDB).C(db.CollectionUsers)
-
+func getComments(comments []db.Comment) (retVal []cases.CommentDisplay) {
 	for _, item := range comments {
-		newComment := CommentDisplay{}
-		if item.Date != 0 {
-			d := item.Date % 50
-			m := (item.Date - d) % 1000
-			m /= 50
-			y := item.Date / 1000
-			newComment.Date = fmt.Sprintf("%d/%02d/%04d ", d, m, y)
-		}
-
-		tempStr := crypto.Decrypt(item.Comment)
-		newComment.Comment = template.HTML(html.EscapeString(tempStr))
-		if item.User != 0 {
-			theName, ok = names[item.User]
-			if !ok {
-				err := userColl.FindId(item.User).One(&theUser)
-				if err == nil {
-					theName = theUser.First + " " + theUser.Surname
-					names[item.User] = theName
-				}
-			}
-		}
-		if len(theName) == 0 {
-			if len(item.Name) > 0 {
-				theName = item.Name
-			}
-		}
-		newComment.Name = template.HTML(html.EscapeString(theName))
+		newComment := cases.CommentDisplay{}
+		newComment.GetCommentDisplay(item)
 		retVal = append(retVal, newComment)
 	}
 	return
@@ -720,6 +673,48 @@ func checkNiNum(nINum string) error {
 		}
 	}
 	return nil
+}
+
+func getCases(clientNum int) []cases.CaseList {
+	var (
+		allCases []cases.CaseList
+		theCase  db.Case
+		theUser  db.User
+	)
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+	userColl := session.DB(db.MainDB).C(db.CollectionUsers)
+
+	iter := caseColl.Find(bson.M{db.KFieldCaseClientNum: clientNum}).Sort(db.KFieldCaseClosed, db.KFieldCaseUpdated).Iter()
+	for iter.Next(&theCase) {
+		newCase := cases.CaseList{Id: theCase.Id}
+		if len(theCase.CaseNumber) > 0 {
+			newCase.CaseNumber = theCase.CaseNumber
+		} else {
+			newCase.CaseNumber = "None"
+		}
+		newCase.CMSNumber = theCase.CMSId
+		if theCase.CaseWorkerNum == 0 {
+			newCase.CaseWorker = crypto.Decrypt(theCase.CaseWorker)
+		} else {
+			err := userColl.FindId(theCase.CaseWorkerNum).One(&theUser)
+			if err == nil {
+				newCase.CaseWorker = crypto.Decrypt(theUser.Name)
+			}
+		}
+		if theCase.Closed {
+			newCase.State = "Closed"
+		} else {
+			newCase.State = "Open"
+		}
+
+		allCases = append(allCases, newCase)
+	}
+	iter.Close()
+	fmt.Println(len(allCases))
+	return allCases
 }
 
 // db.clients.update({"_id": 1375}, { $push: { comments: { $each: [ {date: 2018067, name: "Fred Smith"} ], $position: 0 } }})

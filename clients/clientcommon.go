@@ -46,7 +46,7 @@ var (
 	ErrorDateLowYear      = errors.New("The aeary is too low")
 	ErrorDateHighDay      = errors.New("The day is too high")
 	ErrorDateHighMonth    = errors.New("The month is too high")
-	ErrorDateHighYear     = errors.New("The aeary is too high")
+	ErrorDateHighYear     = errors.New("The year is too high")
 )
 
 // func init() {

@@ -28,7 +28,8 @@
         </div> <!-- end of row -->
         <div class="row">
             <div class="grid_8">
-        {{if .Details.Cases}}
+                <hr>
+        {{if .Cases}}
         <table>
             <thead>
                 <th>Case number</th>
@@ -37,7 +38,7 @@
                 <th>State Add</th>
             </thead>
             <tbody>
-                {{range $element := .Details.Cases}}
+                {{range $element := .Cases}}
                     <tr>
                         <td align="left"><a href="/case/{{$element.Id}}">{{$element.CaseNumber}}</a></td>
                         <td align="left">{{$element.CMSNumber}}</td>

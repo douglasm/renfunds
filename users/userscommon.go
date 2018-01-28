@@ -26,6 +26,15 @@ type (
 		LoggedIn   bool   `bson:"logged,omitempty"`
 		Admin      bool   `bson:"admin,omitempty"`
 	}
+
+	userChoice struct {
+		Id   int    `json:"id"`
+		Name string `json:"name"`
+	}
+
+	userRequest struct {
+		SearchTerm string `schema:"search"`
+	}
 )
 
 var (
@@ -35,4 +44,6 @@ var (
 func SetRoutes(app *iris.Application) {
 	app.Get("/login", login)
 	app.Post("/login", login)
+
+	app.Post("/usersget", getUserList)
 }

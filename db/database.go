@@ -66,7 +66,23 @@ const (
 )
 
 const (
-	KFieldCaseClientNum = "clientnum"
+	KFieldCaseClientNum  = "clientnum"
+	KFieldCaseNum        = "case"
+	KFieldCaseCMS        = "cms"
+	KFieldCaseFirst      = "casefirst"
+	KFieldCaseSurname    = "casesurn"
+	KFieldCaseWorker     = "caseworker"
+	KFieldCaseCreated    = "create"
+	KFieldCaseUpdated    = "updated"
+	KFieldCaseWorkerNum  = "cwnum"
+	KFieldCaseClosed     = "closed"
+	KFieldCaseShredded   = "shredded"
+	KFieldCaseAdded      = "added"
+	KFieldCaseDateClosed = "dateclosed"
+)
+
+const (
+	KFieldUserInactive = "inactive"
 )
 
 type (
@@ -76,25 +92,22 @@ type (
 	}
 
 	Case struct {
-		Id          int       `bson:"_id"`
-		ClientNum   int       `bson:"clientnum"`
-		CaseNumber  string    `bson:"case,omitempty"`
-		CMSId       string    `bson:"cms,omitempty"`
-		VisitNumber string    `bson:"visit,omitempty"`
-		Annuity     bool      `bson:"annuity,omitempty"`
-		Reports     []Comment `bson:"report,omitempty"`
-		UserIssuing int       `bson:"usernum,omitempty"`
-		CaseId      string    `bson:"cwid,omitempty"`
-		CaseFirst   string    `bson:"casefirst,omitempty"`
-		CaseSurname string    `bson:"casesurn,omitempty"`
-		Closed      bool      `bson:"closed,omitempty"`
-		Shredded    bool      `bson:"shredded,omitempty"`
-		Added       int       `bson:"added"`
-		DateClosed  int       `bson:"dateclosed"`
-		Updated     int       `bson:"updated"`
-		CWNum       int       `bson:"cwnum"`
-		Created     int       `bson:"create,omitempty"`
-		Changed     int       `bson:"change,omitempty"`
+		Id            int       `bson:"_id"`
+		ClientNum     int       `bson:"clientnum"`
+		CaseNumber    string    `bson:"case,omitempty"`
+		CMSId         string    `bson:"cms,omitempty"`
+		VisitNumber   string    `bson:"visit,omitempty"`
+		Annuity       bool      `bson:"annuity,omitempty"`
+		Comments      []Comment `bson:"comments,omitempty"`
+		UserIssuing   int       `bson:"usernum,omitempty"`
+		CaseWorkerNum int       `bson:"cwnum"`
+		CaseWorker    string    `bson:"caseworker,omitempty"`
+		Closed        bool      `bson:"closed"`
+		Shredded      bool      `bson:"shredded,omitempty"`
+		Added         int       `bson:"added"`
+		DateClosed    int       `bson:"dateclosed"`
+		Updated       int       `bson:"updated"`
+		Created       int       `bson:"create,omitempty"`
 	}
 
 	Client struct {
@@ -231,6 +244,7 @@ type (
 		Title    string `bson:"title,omitempty"`
 		First    string `bson:"first,omitempty"`
 		Surname  string `bson:"surname,omitempty"`
+		Name     string `bson:"name,omitempty"`
 		Letters  string `bson:"letters,omitempty"`
 		Position string `bson:"position,omitempty"`
 		Username string `bson:"username,omitempty"`
@@ -242,6 +256,7 @@ type (
 		Mobile   string `bson:"mobile,omitempty"`
 		EMail    string `bson:"email,omitempty"`
 		Based    string `bson:"based,omitempty"`
+		InActive bool   `bson:"inactive,omitempty"`
 		Comments string `bson:"comments,omitempty"`
 	}
 

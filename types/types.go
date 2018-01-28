@@ -35,10 +35,6 @@ const (
 )
 
 type (
-	BarcodeRecord struct {
-		Data string
-	}
-
 	HeaderRecord struct {
 		Title      string
 		Loggedin   bool
@@ -111,6 +107,12 @@ type (
 		TextSize     int
 	}
 
+	RowItem struct {
+		Title string
+		Value template.HTML
+		Link  string
+	}
+
 	SearchRecord struct {
 		Term string `schema:"search"`
 		Type string `schema:"stype"`
@@ -125,6 +127,17 @@ var (
 	GeneralMenu = []NavItem{
 		{"Index", "/", "Go to the Agamik home page"},
 		{"Programs", "/barcoder", "Information about our barcode programs, download the latest release"},
+		{"Fonts", "/fonts", "Information about barcode fonts, download the latest release"},
+		{"Creation", "/create", "We can supply your barcodes as files"},
+		{"Downloads", "/download", "Download working versions and demos of our products"},
+		{"Types", "/symbols", "Information about barcode types and how to identify different types"},
+		{"Explained", "/explain", "Answers to the common questions. Information about barcoding. What types to use for which jobs"},
+		{"Buying", "/buying", "Information about buying our products. How to buy and how to pay"},
+		{"Contact", "/contact", "Contact information: e-mail, phone, mail, Skype, MSN Messenger and Yahoo Messenger details"},
+	}
+	AdminMenu = []NavItem{
+		{"Cases", "/cases", "Go to the Agamik home page"},
+		{"Clients", "/clients", "Information about our barcode programs, download the latest release"},
 		{"Fonts", "/fonts", "Information about barcode fonts, download the latest release"},
 		{"Creation", "/create", "We can supply your barcodes as files"},
 		{"Downloads", "/download", "Download working versions and demos of our products"},

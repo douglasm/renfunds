@@ -1,0 +1,83 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h5>{{.Details.ClientName}}</h5>
+        {{template "error_display.html" .}}
+        <form class="inputform" action="/caseedit/{{.Details.Id}}" method="post">
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Case number:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="casenumber" placeholder="Case number" size="30" autofocus value="{{.Details.CaseNumber}}">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>CMS number:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="cms" placeholder="CMS number" size="30" value="{{.Details.CMSNumber}}">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Case worker:</strong>
+                    </div>
+                    <div class="grid_7" id="cw">
+                        {{.Details.CaseWorker}}
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <input type="hidden" name="id" value="{{.Details.Id}}">
+            <input type="hidden" name="cwnum" id="cwnum" value="{{.Details.CaseWorkerNum}}">
+            <input type="hidden" name="client" value="{{.Details.ClientNum}}">
+            <input type="hidden" name="clientname" value="{{.Details.ClientName}}">
+            <input type="hidden" name="cwname" id="cwname" value="{{.Details.CaseWorker}}">
+            <input type="hidden" id="origcw" value="{{.Details.CaseWorker}}">
+            <input type="hidden" id="origcwnum" value="{{.Details.CaseWorkerNum}}">
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <input name="commit" type="submit" value="Save">
+                    </div>
+                    <div class="grid_7">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+        </form>
+        <hr />
+        <div class="row">
+            <div class="grid_10">
+                <div class="grid_2">
+                    <strong>Search case workers:</strong>
+                </div>
+                <div class="grid_7">
+                    <input type="text" id="cwi" size="30" onkeyup="getUsers()">
+                </div>
+            </div>
+        </div> <!-- end of row -->
+        <div class="row">
+            <div class="grid_10">
+                <div class="grid_2">
+                    <strong>Click to select:</strong>
+                </div>
+                <div class="grid_7" id="cwij">
+                </div>
+            </div>
+        </div> <!-- end of row -->
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>
