@@ -263,6 +263,34 @@ func openCase(ctx iris.Context) {
 	ctx.Redirect(theUrl, http.StatusFound)
 }
 
+func addCase(ctx iris.Context) {
+	var (
+		theCase db.Case
+	)
+
+	clientNum, err := ctx.Params().GetInt("clientnum")
+	if err != nil {
+		ctx.Redirect("/clients", http.StatusFound)
+		return
+	}
+
+	// theSession := ctx.Values().Get("session")
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+
+	theCase.Id = db.GetNextSequence(db.CollectionCases)
+	theCase.ClientNum = clientNum
+	theCase.Created = utils.CurrentDate()
+	theCase.Updated = theCase.Created
+
+	caseColl.Insert(&theCase)
+
+	theUrl := fmt.Sprintf("/case/%d", theCase.Id)
+	ctx.Redirect(theUrl, http.StatusFound)
+}
+
 func editCase(ctx iris.Context) {
 	var (
 		theCase      db.Case

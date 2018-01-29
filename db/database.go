@@ -41,6 +41,10 @@ const (
 )
 
 const (
+	KFieldId = "_id"
+)
+
+const (
 	KFieldClientsNiNum      = "ninum"
 	KFieldClientsComments   = "comments"
 	KFieldClientsReports    = "report"

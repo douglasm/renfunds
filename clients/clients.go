@@ -239,9 +239,8 @@ func showClient(ctx iris.Context) {
 
 	err = clientColl.FindId(clientNum).One(&theClient)
 	if err != nil {
-		fmt.Println("Client read error:", err)
+		log.Println("Error: Client read error:", err)
 	}
-	// fmt.Println(theClient.Id)
 	header.Title = "RF: Client"
 
 	decryptClient(&theClient)
@@ -321,7 +320,7 @@ func addComment(ctx iris.Context) {
 
 	err = clientColl.UpdateId(clientNum, thePush)
 	if err != nil {
-		fmt.Println("Push error:", err)
+		log.Println("Error: Client addComment Push error:", err)
 	}
 
 	ctx.Redirect(fmt.Sprintf("/client/%d", clientNum), http.StatusFound)
@@ -518,10 +517,9 @@ func (ce *ClientEdit) saveClient() int {
 	theClient.Created = db.GetCurrentDate()
 	theClient.Changed = theClient.Created
 
-	fmt.Printf("%+v\n", theClient)
 	err := clientColl.Insert(theClient)
 	if err != nil {
-		fmt.Println("Client save error:", err)
+		log.Println("Error: Client save error:", err)
 	}
 
 	return theClient.Id
@@ -713,7 +711,6 @@ func getCases(clientNum int) []cases.CaseList {
 		allCases = append(allCases, newCase)
 	}
 	iter.Close()
-	fmt.Println(len(allCases))
 	return allCases
 }
 
