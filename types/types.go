@@ -70,6 +70,12 @@ type (
 		Link  string
 	}
 
+	SortItem struct {
+		Title    string
+		Link     string
+		Sortable bool
+	}
+
 	TableRow struct {
 		First  string
 		Second string

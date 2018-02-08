@@ -95,10 +95,3 @@ func Test_NINumbers(t *testing.T) {
 		So(ce.checkClient(), ShouldBeNil)
 	})
 }
-
-// ErrorDateBadDay       = errors.New("The day value is wrong")
-// ErrorDateBadMonth     = errors.New("The month value is wrong")
-// ErrorDateBadYear      = errors.New("The year value is wrong")
-// ErrorDateLowDay       = errors.New("The day is too low")
-// ErrorDateLowMonth     = errors.New("The month is too low")
-// ErrorDateLowYear      = errors.New("The aeary is too low")

@@ -39,6 +39,7 @@
                         <th>Date</th>
                         <th>Comment</th>
                         <th>Case Worker</th>
+                        <th></th>
                     </thead>
                     <tbody>
                         <form action="/commentcase/{{.Details.Id}}" method="post">
@@ -56,6 +57,7 @@
                                 <td>{{$element.Date}}</td>
                                 <td>{{$element.Comment}}</td>
                                 <td>{{$element.Name}}</td>
+                                <td><a href="">Edit</a></td>
                             </tr>
                         {{end}}
                     </tbody>

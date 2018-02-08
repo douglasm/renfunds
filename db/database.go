@@ -86,13 +86,30 @@ const (
 )
 
 const (
+	KFieldUserAdmin    = "admin_access"
 	KFieldUserInactive = "inactive"
+	KFieldUserPosition = "position"
 )
 
 type (
 	Counter struct {
 		Id    string `bson:"_id"`
 		Value int    `bson:"value"`
+	}
+
+	Annuity struct {
+		Id            int       `bson:"_id"`
+		ClientNum     int       `bson:"clientnum"`
+		CaseNumber    string    `bson:"case,omitempty"`
+		CMSId         string    `bson:"cms,omitempty"`
+		Comments      []Comment `bson:"comments,omitempty"`
+		Amount        int       `bson:"amount,omitempty"`
+		Organisation  string    `bson:"organisation,omitempty"`
+		CaseWorkerNum int       `bson:"cwnum"`
+		Closed        bool      `bson:"closed"`
+		DateClosed    int       `bson:"dateclosed"`
+		Updated       int       `bson:"updated"`
+		Created       int       `bson:"create,omitempty"`
 	}
 
 	Case struct {
@@ -152,6 +169,7 @@ type (
 	}
 
 	Comment struct {
+		Num     int    `bson:"num"`
 		Comment string `bson:"comment,omitempty"`
 		Date    int    `bson:"date,omitempty"`
 		User    int    `bson:"user,omitempty"`

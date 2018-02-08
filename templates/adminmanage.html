@@ -1,0 +1,37 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h5>Manage personnel</h5>
+        <table>
+            <thead>
+                {{range $elem := .ColHeaders}}
+                    {{if $elem.Sortable}}
+                        <th><a href="{{$elem.Link}}">{{$elem.Title}}</a></th>
+                    {{else}}
+                        <th>{{$elem.Title}}</th>
+                    {{end}}
+                {{end}}
+            </thead>
+            <tbody>
+                {{range $elem := .Details}}
+                <tr>
+                    <td>{{$elem.First}}</td>
+                    <td><a href="/client/{{$elem.Id}}">{{$elem.Surname}}</a></td>
+                    <td>{{$elem.Role}}</td>
+                    <td><a href="{{$elem.AdminLink}}">{{$elem.AdminStr}}</a></td>
+                    <td>{{$elem.Based}}</td>
+                    <td><a href="{{$elem.ActiveLink}}">{{$elem.ActiveStr}}</a></td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>

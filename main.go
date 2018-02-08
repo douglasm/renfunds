@@ -13,6 +13,7 @@ import (
 	"github.com/kataras/iris/middleware/logger"
 	"gopkg.in/mgo.v2"
 
+	"ssafa/admin"
 	"ssafa/cases"
 	"ssafa/clients"
 	"ssafa/cookie"
@@ -140,6 +141,7 @@ func main() {
 	users.SetRoutes(app)
 	clients.SetRoutes(app)
 	cases.SetRoutes(app)
+	admin.SetRoutes(app)
 
 	clients.OrderClients()
 

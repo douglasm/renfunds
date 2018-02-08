@@ -147,7 +147,7 @@ func listCases(ctx iris.Context) {
 
 	details, _ = GetCases(pageNum, match, sort)
 
-	header.Title = "RF: Unassigned Cases"
+	header.Title = "RF: Cases"
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
@@ -174,7 +174,7 @@ func openCases(ctx iris.Context) {
 
 	details, _ = GetCases(pageNum, match, sort)
 
-	header.Title = "RF: Unassigned Cases"
+	header.Title = "RF: Open Cases"
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
@@ -228,7 +228,7 @@ func inactiveCases(ctx iris.Context) {
 
 	details, _ = GetCases(pageNum, match, sort)
 
-	header.Title = "RF: Unassigned Cases"
+	header.Title = "RF: Inactive Cases"
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)

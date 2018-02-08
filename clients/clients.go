@@ -66,6 +66,15 @@ type (
 		Checkfield string                 `schema:"checkfield"`
 		Commit     string                 `schema:"commit"`
 	}
+
+	CommentEdit struct {
+		Id      int    `schema:"id"`
+		Message string `schema:"-"`
+		Link    string `schema:"-"`
+		Comment string `schema:"comment"`
+		Num     int    `schema:"num"`
+		Commit  string `schema:"commit"`
+	}
 )
 
 func ListClients(ctx iris.Context) {
@@ -267,7 +276,7 @@ func showClient(ctx iris.Context) {
 	}
 	details.ServiceNum = theClient.ServiceNum
 	details.Unit = theClient.Unit
-	details.Comments = getComments(theClient.Comments)
+	details.Comments = getComments(theClient.Comments, details.Id)
 
 	allCases := getCases(theClient.Id)
 
@@ -279,9 +288,11 @@ func showClient(ctx iris.Context) {
 
 func addComment(ctx iris.Context) {
 	var (
-		newComment cases.CommentRec
-		clientNum  int
-		err        error
+		newComment  cases.CommentRec
+		theClient   db.Client
+		clientNum   int
+		lastComment int
+		err         error
 	)
 
 	clientNum, err = ctx.Params().GetInt("clientnum")
@@ -297,6 +308,19 @@ func addComment(ctx iris.Context) {
 		return
 	}
 
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+
+	err = clientColl.FindId(clientNum).One(&theClient)
+
+	lastComment = len(theClient.Comments) + 1
+	for _, item := range theClient.Comments {
+		if item.Num >= lastComment {
+			lastComment = item.Num + 1
+		}
+	}
+
 	theSession := ctx.Values().Get("session")
 
 	tempStr := crypto.Encrypt(newComment.Comment)
@@ -306,7 +330,7 @@ func addComment(ctx iris.Context) {
 	y += (int(theTime.Month()) * 50)
 	y += theTime.Day()
 
-	comment := bson.M{"comment": tempStr, "user": theSession.(users.Session).UserNumber, "date": y}
+	comment := bson.M{"comment": tempStr, "user": theSession.(users.Session).UserNumber, "date": y, "num": lastComment}
 	each := []bson.M{comment}
 
 	commentEach := bson.M{"$each": each, "$position": 0}
@@ -314,16 +338,118 @@ func addComment(ctx iris.Context) {
 	thePush := bson.M{"$push": bson.M{"comments": commentEach}}
 	// db.clients.update({"_id": 1375}, { $push: { comments: { $each: [ {date: 2018067, name: "Fred Smith"} ], $position: 0 } }})
 
-	session := db.MongoSession.Copy()
-	defer session.Close()
-	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
-
 	err = clientColl.UpdateId(clientNum, thePush)
 	if err != nil {
 		log.Println("Error: Client addComment Push error:", err)
 	}
 
 	ctx.Redirect(fmt.Sprintf("/client/%d", clientNum), http.StatusFound)
+}
+
+func editComment(ctx iris.Context) {
+	var (
+		theClient    db.Client
+		details      CommentEdit
+		header       types.HeaderRecord
+		clientNum    int
+		commentNum   int
+		gotOne       bool
+		errorMessage string
+		err          error
+	)
+
+	theSession := ctx.Values().Get("session")
+	if !theSession.(users.Session).LoggedIn {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	clientNum, err = ctx.Params().GetInt("clientnum")
+	if err != nil {
+		ctx.Redirect("/clients", http.StatusFound)
+		return
+	}
+
+	commentNum, err = ctx.Params().GetInt("commentnum")
+	if err != nil {
+		theUrl := fmt.Sprintf("/client/%d", clientNum)
+		ctx.Redirect(theUrl, http.StatusFound)
+		return
+	}
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+
+	details.Message = "Edit client comment"
+	details.Link = fmt.Sprintf("/clientcomment/%d/%d", clientNum, commentNum)
+	details.Id = clientNum
+	details.Num = commentNum
+
+	switch ctx.Method() {
+	case http.MethodGet:
+		err = clientColl.FindId(clientNum).One(&theClient)
+		if err != nil {
+			theUrl := fmt.Sprintf("/client/%d", clientNum)
+			ctx.Redirect(theUrl, http.StatusFound)
+			return
+		}
+
+		for _, item := range theClient.Comments {
+			if item.Num == commentNum {
+				details.Comment = crypto.Decrypt(item.Comment)
+				gotOne = true
+				break
+			}
+		}
+		if !gotOne {
+			theUrl := fmt.Sprintf("/client/%d", clientNum)
+			ctx.Redirect(theUrl, http.StatusFound)
+			return
+		}
+
+	case http.MethodPost:
+		err = decoder.Decode(&details, ctx.FormValues())
+		if err != nil {
+			log.Println("Error: esit comment decode", err)
+		}
+
+		err = clientColl.FindId(clientNum).One(&theClient)
+		if err != nil {
+			theUrl := fmt.Sprintf("/client/%d", clientNum)
+			ctx.Redirect(theUrl, http.StatusFound)
+			return
+		}
+
+		newComments := []db.Comment{}
+		for _, item := range theClient.Comments {
+			if item.Num == commentNum {
+				item.Comment = crypto.Encrypt(details.Comment)
+				gotOne = true
+			}
+			newComments = append(newComments, item)
+		}
+		if gotOne {
+			err = clientColl.UpdateId(clientNum, bson.M{"$set": bson.M{db.KFieldClientsComments: newComments}})
+			if err != nil {
+				log.Println("Update err:", err)
+			}
+		}
+
+		theUrl := fmt.Sprintf("/client/%d", clientNum)
+		ctx.Redirect(theUrl, http.StatusFound)
+		return
+	}
+
+	header.Loggedin = theSession.(users.Session).LoggedIn
+	header.Admin = theSession.(users.Session).Admin
+	header.Title = "RF: Edit client comment"
+
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+	ctx.ViewData("ErrorMessage", errorMessage)
+	ctx.View("commentedit.html")
+
 }
 
 func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool) {
@@ -399,10 +525,12 @@ func (ce *ClientEdit) fillEdit(theClient db.Client) {
 	ce.Unit = theClient.Unit
 }
 
-func getComments(comments []db.Comment) (retVal []cases.CommentDisplay) {
+func getComments(comments []db.Comment, clientNum int) (retVal []cases.CommentDisplay) {
 	for _, item := range comments {
 		newComment := cases.CommentDisplay{}
 		newComment.GetCommentDisplay(item)
+		newComment.Item = clientNum
+		newComment.Num = item.Num
 		retVal = append(retVal, newComment)
 	}
 	return

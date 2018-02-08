@@ -51,6 +51,8 @@ type (
 		Date    string
 		Comment template.HTML
 		Name    template.HTML
+		Item    int
+		Num     int
 	}
 
 	CommentRec struct {

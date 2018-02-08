@@ -61,6 +61,7 @@
                 <th>Date</th>
                 <th>Comment</th>
                 <th>Case Worker</th>
+                <th></th>
             </thead>
             <tbody>
                 <form action="/commentclient/{{.Details.Id}}" method="post">
@@ -78,6 +79,7 @@
                         <td>{{$element.Date}}</td>
                         <td>{{$element.Comment}}</td>
                         <td>{{$element.Name}}</td>
+                        <td><a href="/clientcomment/{{$element.Item}}/{{$element.Num}}" class="button">Edit</a></td>
                     </tr>
                 {{end}}
             </tbody>

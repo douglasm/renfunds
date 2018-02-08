@@ -1,0 +1,23 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_9">
+        <h5>{{.Details.Message}}</h5>
+        <form action="/clientcomment/{{.Details.Id}}/{{.Details.Num}}" class="commentform" method="post">
+            <textarea name="comment" placeholder="Comment" rows="4">{{.Details.Comment}}</textarea>
+            <input type="hidden" name="id" value="{{.Details.Id}}">
+            <input type="hidden" name="num" value="{{.Details.Num}}">
+            <br />
+            <br />
+            <p>
+                <input name="commit" type="submit" value="Save comment">
+            </p>
+        </form>
+    </div> <!-- end of grid_9 -->
+</div> <!-- end of row -->
+
+</body>
+</html>

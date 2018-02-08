@@ -43,7 +43,7 @@ var (
 	ErrorDateBadYear      = errors.New("The year value is wrong")
 	ErrorDateLowDay       = errors.New("The day is too low")
 	ErrorDateLowMonth     = errors.New("The month is too low")
-	ErrorDateLowYear      = errors.New("The aeary is too low")
+	ErrorDateLowYear      = errors.New("The year is too low")
 	ErrorDateHighDay      = errors.New("The day is too high")
 	ErrorDateHighMonth    = errors.New("The month is too high")
 	ErrorDateHighYear     = errors.New("The year is too high")
@@ -72,6 +72,8 @@ func SetRoutes(app *iris.Application) {
 	app.Post("/searchclient", searchClients)
 	app.Post("/searchclient/{pagenum:int}", searchClients)
 	app.Post("/commentclient/{clientnum:int}", addComment)
+	app.Get("/clientcomment/{clientnum:int}/{commentnum:int}", editComment)
+	app.Post("/clientcomment/{clientnum:int}/{commentnum:int}", editComment)
 	// app.Get("/client/{clientnum:int}", showClient)
 }
 

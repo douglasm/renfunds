@@ -1,7 +1,4 @@
 var users;
-// window.onload = function(e){ 
-//     getUsers(0);
-// }
 
 function getUsers(){
     var xmlHttp = new XMLHttpRequest();
@@ -20,18 +17,10 @@ function getUsers(){
 function usersFunction(thetext) {
     var obj = JSON.parse(thetext);
     if(obj == null){
-        // wname = document.getElementById("origcw").value;
-        // val = document.getElementById("origcwnum").value;
-        // document.getElementById("cw").textContent=wname;
-        // document.getElementById("cwnum").value=val;
         document.getElementById("cwij").textContent="";
         return;
     }
     if(obj.length < 1){
-        // wname = document.getElementById("origcw").value;
-        // val = document.getElementById("origcwnum").value;
-        // document.getElementById("cw").textContent=wname;
-        // document.getElementById("cwnum").value=val;
         document.getElementById("cwij").textContent="";
         return;
     }
@@ -39,7 +28,7 @@ function usersFunction(thetext) {
     var thestr = "";
     for(var i= 0; i < obj.length; i++){
         thestr += "<a href=\"javascript:setuser('";
-        thestr += obj[i].name + "', " + obj[i].id + ")\">" + obj[i].name + "</a>" + obj[i].id + "<br />";
+        thestr += obj[i].name + "', " + obj[i].id + ")\">" + obj[i].name + "</a><br />";
     }
     document.getElementById("cwij").innerHTML=thestr;
 }
