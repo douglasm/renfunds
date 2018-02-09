@@ -411,7 +411,7 @@ func editComment(ctx iris.Context) {
 	case http.MethodPost:
 		err = decoder.Decode(&details, ctx.FormValues())
 		if err != nil {
-			log.Println("Error: esit comment decode", err)
+			log.Println("Error: edit comment decode", err)
 		}
 
 		err = clientColl.FindId(clientNum).One(&theClient)
@@ -449,7 +449,6 @@ func editComment(ctx iris.Context) {
 	ctx.ViewData("Details", details)
 	ctx.ViewData("ErrorMessage", errorMessage)
 	ctx.View("commentedit.html")
-
 }
 
 func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool) {

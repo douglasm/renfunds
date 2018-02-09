@@ -1,0 +1,117 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h5>{{.Details.Name}}</h5>
+        {{template "error_display.html" .}}
+        <form class="inputform" action="/useredit/{{.Details.Id}}" method="post">
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>First:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="first" placeholder="First name" size="30" autofocus value="{{.Details.First}}">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Surname:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="surname" placeholder="Surname" size="30" value="{{.Details.Surname}}">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Position:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="posit" placeholder="Position" size="30" value="{{.Details.Position}}">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Admin access:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="radio" name="admin" value="yes" {{if .Admin}}checked{{end}}>Yes
+                        <input type="radio" name="admin" value="no" {{if .Admin}}{{else}}checked{{end}}>No
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Address:</strong>
+                    </div>
+                    <div class="grid_7">
+<textarea name="address" placeholder="Address" rows="4" cols="29" value="{{.Details.Address}}">{{.Details.Address}}</textarea>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Post Code:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="postcode" placeholder="Post Code" size="30" value="{{.Details.PostCode}}">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>E Mail:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="email" placeholder="E Mail" size="30" value="{{.Details.EMail}}">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Phone:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="phone" placeholder="Phone" size="30" value="{{.Details.Phone}}">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Mobile:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="mobile" placeholder="Mobile" size="30" value="{{.Details.Mobile}}">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <input type="hidden" name="id" value="{{.Details.Id}}">
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <input name="commit" type="submit" value="Save">
+                    </div>
+                    <div class="grid_7">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+        </form>
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+</body>
+</html>

@@ -46,4 +46,8 @@ func SetRoutes(app *iris.Application) {
 	app.Post("/login", login)
 
 	app.Post("/usersget", getUserList)
+
+	app.Get("/user/{usernum:int}", showUser)
+	app.Get("/useredit/{usernum:int}", editUser)
+	app.Post("/useredit/{usernum:int}", editUser)
 }

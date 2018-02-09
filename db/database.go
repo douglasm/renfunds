@@ -89,6 +89,15 @@ const (
 	KFieldUserAdmin    = "admin_access"
 	KFieldUserInactive = "inactive"
 	KFieldUserPosition = "position"
+	KFieldUserFirst    = "first"
+	KFieldUserSurname  = "surname"
+	KFieldUserAddress  = "address"
+	KFieldUserPostCode = "postcode"
+	KFieldUserEMail    = "email"
+	KFieldUserPhone    = "telephone"
+	KFieldUserMobile   = "mobile"
+	KFieldUserBased    = "based"
+	KFieldUserArea     = "area"
 )
 
 type (
