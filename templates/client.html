@@ -49,9 +49,11 @@
             </tbody>
         </table>
         {{else}}
-            <hr />
             <p>
                 No cases
+                <div class="button-group">
+                    <a href="/caseadd/{{.Details.Id}}" class="button">Add</a>
+                </div>
             </p>
         {{end}}
             </div>

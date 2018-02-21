@@ -287,7 +287,7 @@ type (
 		Mobile   string `bson:"mobile,omitempty"`
 		EMail    string `bson:"email,omitempty"`
 		Based    string `bson:"based,omitempty"`
-		InActive bool   `bson:"inactive,omitempty"`
+		InActive bool   `bson:"inactive"`
 		Comments string `bson:"comments,omitempty"`
 	}
 

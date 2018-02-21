@@ -153,6 +153,7 @@ func editClientHandler(ctx iris.Context) {
 		}
 		err = details.checkClient()
 		if err == nil {
+			fmt.Println("Saving", clientNum)
 			if clientNum == 0 {
 				clientNum = details.saveClient()
 				OrderClients()

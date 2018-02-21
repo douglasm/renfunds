@@ -35,8 +35,7 @@ func login(ctx iris.Context) {
 		theUser      db.User
 		err          error
 	)
-	user := User{Name: "Albert Einstein", Towns: []string{"London", "Manchester", "Paris"}, Num: 65}
-	// fmt.Println(ctx.Value("fred"))
+
 	theSession = ctx.Values().Get("session").(Session)
 	header := types.HeaderRecord{Title: "Renfunds login"}
 	header.Scripts = append(header.Scripts, "passwordtoggle")
@@ -61,6 +60,10 @@ func login(ctx iris.Context) {
 								failed = true
 							}
 						}
+						if theUser.InActive {
+							failed = true
+						}
+
 						if !failed {
 							for true {
 								cookieString = crypto.RandomChars(16)
@@ -95,8 +98,7 @@ func login(ctx iris.Context) {
 	details.Checkfield = crypto.MakeNonce(KLoginForm, "noone")
 	ctx.ViewData("Title", "Hi Page")
 	ctx.ViewData("Name", "iris")
-	ctx.ViewData("Farty", "bugger")
-	ctx.ViewData("User", user)
+	// ctx.ViewData("User", user)
 	ctx.ViewData("Details", details)
 	ctx.ViewData("Header", header)
 	// ctx.ViewData("", myCcustomStruct{})

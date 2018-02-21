@@ -5,8 +5,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 	// "sort"
-	// "strings"
 
 	"github.com/kataras/iris"
 	// "gopkg.in/mgo.v2"
@@ -84,6 +84,7 @@ func showCase(ctx iris.Context) {
 	header.Admin = theSession.(users.Session).Admin
 
 	header.Title = "RF: Case " + theCase.CaseNumber
+
 	details.CaseNumber = theCase.CaseNumber
 
 	details.ClientName.Title = "Client"
@@ -142,12 +143,15 @@ func listCases(ctx iris.Context) {
 		pageNum = 0
 	}
 
+	theSession := ctx.Values().Get("session")
+
 	match := bson.M{"$match": bson.M{db.KFieldCaseClientNum: bson.M{"$ne": 0}}}
 	sort := bson.M{"$sort": bson.M{db.KFieldCaseCreated: 1}}
 
 	details, _ = GetCases(pageNum, match, sort)
 
 	header.Title = "RF: Cases"
+	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
@@ -169,12 +173,14 @@ func openCases(ctx iris.Context) {
 		pageNum = 0
 	}
 
+	theSession := ctx.Values().Get("session")
 	match := bson.M{"$match": bson.M{db.KFieldCaseClosed: false}}
 	sort := bson.M{"$sort": bson.M{db.KFieldCaseCreated: 1}}
 
 	details, _ = GetCases(pageNum, match, sort)
 
 	header.Title = "RF: Open Cases"
+	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
@@ -196,12 +202,14 @@ func unassignedCases(ctx iris.Context) {
 		pageNum = 0
 	}
 
+	theSession := ctx.Values().Get("session")
 	match := bson.M{"$match": bson.M{db.KFieldCaseWorkerNum: 0, db.KFieldCaseClosed: false}}
 	sort := bson.M{"$sort": bson.M{db.KFieldCaseCreated: 1}}
 
 	details, _ = GetCases(pageNum, match, sort)
 
 	header.Title = "RF: Unassigned Cases"
+	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
@@ -223,12 +231,14 @@ func inactiveCases(ctx iris.Context) {
 		pageNum = 0
 	}
 
+	theSession := ctx.Values().Get("session")
 	match := bson.M{"$match": bson.M{db.KFieldCaseWorkerNum: 0, db.KFieldCaseClosed: false}}
 	sort := bson.M{"$sort": bson.M{db.KFieldCaseUpdated: 1}}
 
 	details, _ = GetCases(pageNum, match, sort)
 
 	header.Title = "RF: Inactive Cases"
+	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
@@ -510,6 +520,7 @@ func (ce *CaseEdit) Save() error {
 	// KFieldCaseCMS        = "cms"
 
 	gotOne := false
+	ce.CaseNumber = strings.ToUpper(ce.CaseNumber)
 	iter := caseColl.Find(bson.M{db.KFieldCaseNum: ce.CaseNumber}).Iter()
 	for iter.Next(&theCase) {
 		if theCase.Id != ce.Id {

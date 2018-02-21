@@ -23,6 +23,7 @@ type (
 		Surname     string        `schema:"surname"`
 		Name        string        `schema:"_"`
 		Position    string        `schema:"posit"`
+		Based       string        `schema:"based"`
 		EMail       string        `schema:"email"`
 		Address     string        `schema:"address"`
 		AddressHTML template.HTML `schema:"-"`
@@ -77,6 +78,10 @@ func getUserList(ctx iris.Context) {
 			break
 		}
 		if theUser.InActive {
+			continue
+		}
+
+		if !strings.Contains(strings.ToLower(theUser.Position), "caseworker") {
 			continue
 		}
 
@@ -138,6 +143,7 @@ func editUser(ctx iris.Context) {
 		details.First = crypto.Decrypt(theUser.First)
 		details.Surname = crypto.Decrypt(theUser.Surname)
 		details.Position = theUser.Position
+		details.Based = theUser.Based
 		details.EMail = crypto.Decrypt(theUser.EMail)
 		details.Address = crypto.Decrypt(theUser.Address)
 		details.PostCode = crypto.Decrypt(theUser.PostCode)
@@ -151,6 +157,9 @@ func editUser(ctx iris.Context) {
 			log.Println("Error: decode user edit", err)
 		}
 		details.save()
+		tempStr := fmt.Sprintf("/user/%d", userNum)
+		ctx.Redirect(tempStr, http.StatusFound)
+		return
 	}
 
 	details.Name = strings.TrimSpace(details.First + " " + details.Surname)
@@ -205,6 +214,7 @@ func showUser(ctx iris.Context) {
 	details.First = crypto.Decrypt(theUser.First)
 	details.Surname = crypto.Decrypt(theUser.Surname)
 	details.Position = theUser.Position
+	details.Based = theUser.Based
 	details.EMail = crypto.Decrypt(theUser.EMail)
 	details.Address = crypto.Decrypt(theUser.Address)
 	details.AddressHTML = template.HTML(strings.Replace(details.Address, "\r", "<br />", -1))
@@ -266,6 +276,10 @@ func (er editRec) save() {
 
 	if theUser.Position != er.Position {
 		sets[db.KFieldUserPosition] = er.Position
+	}
+
+	if theUser.Based != er.Based {
+		sets[db.KFieldUserBased] = er.Based
 	}
 
 	if er.AdminStr == "yes" {
