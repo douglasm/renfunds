@@ -520,33 +520,43 @@ func (ce *CaseEdit) Save() error {
 	// KFieldCaseCMS        = "cms"
 
 	gotOne := false
-	ce.CaseNumber = strings.ToUpper(ce.CaseNumber)
-	iter := caseColl.Find(bson.M{db.KFieldCaseNum: ce.CaseNumber}).Iter()
-	for iter.Next(&theCase) {
-		if theCase.Id != ce.Id {
-			gotOne = true
-			break
+	ce.CaseNumber = strings.TrimSpace(ce.CaseNumber)
+	if len(ce.CaseNumber) > 0 {
+		ce.CaseNumber = strings.ToUpper(ce.CaseNumber)
+		iter := caseColl.Find(bson.M{db.KFieldCaseNum: ce.CaseNumber}).Iter()
+		for iter.Next(&theCase) {
+			if theCase.Id != ce.Id {
+				gotOne = true
+				break
+			}
+		}
+		iter.Close()
+
+		if gotOne {
+			return ErrorDateCaseUsed
 		}
 	}
-	iter.Close()
 
-	if gotOne {
-		return ErrorDateCaseUsed
-	}
+	ce.CMSNumber = strings.TrimSpace(ce.CMSNumber)
+	if len(ce.CMSNumber) > 0 {
+		iter := caseColl.Find(bson.M{db.KFieldCaseCMS: ce.CMSNumber}).Iter()
+		for iter.Next(&theCase) {
+			if theCase.Id != ce.Id {
+				gotOne = true
+				break
+			}
+		}
+		iter.Close()
 
-	iter = caseColl.Find(bson.M{db.KFieldCaseCMS: ce.CMSNumber}).Iter()
-	for iter.Next(&theCase) {
-		if theCase.Id != ce.Id {
-			gotOne = true
-			break
+		if gotOne {
+			return ErrorDateCMSUsed
 		}
 	}
-	iter.Close()
 
-	if gotOne {
-		return ErrorDateCMSUsed
+	err := caseColl.FindId(ce.Id).One(&theCase)
+	if err != nil {
+		log.Println("Error: case save read", err)
 	}
-
 	sets := bson.M{}
 	if ce.CMSNumber != theCase.CMSId {
 		sets[db.KFieldCaseCMS] = ce.CMSNumber
