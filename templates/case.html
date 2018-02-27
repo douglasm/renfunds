@@ -16,7 +16,7 @@
                             <a href="/caseedit/{{.Details.Id}}" class="button">Edit</a>
                         </div>
                     </div>
-                    <div class="grid_4">
+                    <div class="grid_2">
                     {{if .Header.Admin}}
                         <div class="button-group">
                             {{if .Details.Open}}
@@ -24,6 +24,13 @@
                             {{else}}
                             <a href="/caseopened/{{.Details.Id}}" class="button">Open</a>
                             {{end}}
+                        </div>
+                    {{end}}
+                    </div>
+                    <div class="grid_2">
+                    {{if .Header.Admin}}
+                        <div class="button-group">
+                            <a href="/casedelete/{{.Details.Id}}" class="button">Delete</a>
                         </div>
                     {{end}}
                     </div>

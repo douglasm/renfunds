@@ -1,0 +1,36 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <!-- <div class="row"> -->
+            <!-- <div class="grid_9"> -->
+                <div class="row">
+                    <div class="grid_9">
+                        <h5>Delete case {{.Details.CaseNumber}}</h5>
+                    </div>
+                </div>
+                {{template "rowitemlink.html" .Details.ClientName}}
+                {{template "rowitem.html" .Details.CaseWorker}}
+                {{template "rowitem.html" .Details.CMSNumber}}
+                {{template "rowitem.html" .Details.Opened}}
+                {{template "rowitem.html" .Details.Updated}}
+                {{template "rowitem.html" .Details.State}}
+                <div class="row">
+                    <div class="grid_2">
+                        <a href="/caseremove/{{.Details.Id}}" class="button big icon remove danger">Delete</a>
+                    </div>
+                    <div class="grid_7">
+                        <a href="/case/{{.Details.Id}}" class="button big">Cancel</a>
+                    </div>
+                </div> <!-- end of row -->
+            <!-- </div> end of grid_9 -->
+        <!-- /div> < end of row -->
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>

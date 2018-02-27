@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -61,6 +62,12 @@ var (
 		".png",
 		".ico",
 		".svg",
+	}
+
+	nonLoggedPages = [...]string{
+		"/",
+		"/login",
+		"/404",
 	}
 )
 
@@ -134,6 +141,7 @@ func main() {
 
 	app.StaticWeb("/css", "./css")
 	app.StaticWeb("/js", "./js")
+	app.StaticWeb("/images", "./images")
 
 	app.Get("/", hi)
 	app.Post("/", hi)
@@ -199,7 +207,24 @@ func authCheck(ctx iris.Context) {
 	// fmt.Println("Referer", ctx.GetHeader("Referer"))
 	// fmt.Println("Origin", ctx.GetHeader("Origin"))
 
-	theSession.ValidCookie(ctx.GetCookie("session"))
+	if !theSession.ValidCookie(ctx.GetCookie("session")) {
+		// fmt.Println("The path is:", path)
+		validPage := false
+		for _, item := range nonLoggedPages {
+			if item == strings.ToLower(path) {
+				validPage = true
+				break
+			}
+		}
+		// fmt.Println("Not logged in")
+		if !validPage {
+			// fmt.Println("Not a valid page")
+			ctx.StopExecution()
+			ctx.Redirect("/", http.StatusFound)
+			return
+		}
+	}
+
 	ctx.Values().Set("logged", theSession.LoggedIn)
 	ctx.Values().Set("admin", theSession.Admin)
 	ctx.Values().Set("user", theSession.UserNumber)

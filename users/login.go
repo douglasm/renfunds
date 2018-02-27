@@ -1,7 +1,7 @@
 package users
 
 import (
-	// "fmt"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -103,4 +103,22 @@ func login(ctx iris.Context) {
 	ctx.ViewData("Header", header)
 	// ctx.ViewData("", myCcustomStruct{})
 	ctx.View("login.html")
+}
+
+func logout(ctx iris.Context) {
+
+	cookieName := ctx.GetCookie("session")
+	fmt.Println(cookieName)
+	ctx.RemoveCookie(cookieName)
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+
+	sessionCollection := session.DB(db.MainDB).C(db.CollectionSessions)
+	err := sessionCollection.RemoveId(cookieName)
+	if err != nil {
+		log.Println("Error: logout fail", cookieName, err)
+	}
+
+	ctx.Redirect("/", http.StatusFound)
 }

@@ -93,6 +93,9 @@ func SetRoutes(app *iris.Application) {
 	app.Get("/caseedit/{casenum:int}", editCase)
 	app.Post("/caseedit/{casenum:int}", editCase)
 
+	app.Get("/casedelete/{casenum:int}", deleteCase)
+	app.Get("/caseremove/{casenum:int}", removeCase)
+
 	app.Post("/commentcase/{casenum:int}", addComment)
 }
 

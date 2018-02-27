@@ -128,6 +128,122 @@ func showCase(ctx iris.Context) {
 	ctx.View("case.html")
 }
 
+func deleteCase(ctx iris.Context) {
+	var (
+		details   CaseDisplay
+		theCase   db.Case
+		theClient db.Client
+		header    types.HeaderRecord
+		caseNum   int
+		err       error
+	)
+
+	caseNum, err = ctx.Params().GetInt("casenum")
+	if err != nil {
+		ctx.Redirect("/cases", http.StatusFound)
+		return
+	}
+
+	theSession := ctx.Values().Get("session")
+	header.Admin = theSession.(users.Session).Admin
+
+	if !header.Admin {
+		ctx.Redirect("/cases", http.StatusFound)
+		return
+	}
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+
+	err = caseColl.FindId(caseNum).One(&theCase)
+	if err != nil {
+		ctx.Redirect("/cases", http.StatusFound)
+		return
+	}
+
+	err = clientColl.FindId(theCase.ClientNum).One(&theClient)
+
+	details.Id = caseNum
+
+	header.Title = "RF: Delete Case " + theCase.CaseNumber
+
+	details.CaseNumber = theCase.CaseNumber
+
+	details.ClientName.Title = "Client"
+	tempStr := crypto.Decrypt(theClient.First) + " " + crypto.Decrypt(theClient.Surname)
+	details.ClientName.Value = template.HTML(tempStr)
+	details.ClientName.Link = fmt.Sprintf("/client/%d", theCase.ClientNum)
+
+	details.CaseWorker.Title = "Case worker"
+	if theCase.CaseWorkerNum == 0 {
+		details.CaseWorker.Value = template.HTML(crypto.Decrypt(theCase.CaseWorker))
+	} else {
+		details.CaseWorker.Value = template.HTML(users.GetUserName(theCase.CaseWorkerNum))
+	}
+
+	details.CMSNumber.Title = "CMS number"
+	details.CMSNumber.Value = template.HTML(theCase.CMSId)
+
+	details.Opened.Title = "Opened"
+	details.Opened.Value = template.HTML(utils.DateToString(theCase.Created))
+
+	details.Updated.Title = "Updated"
+	details.Updated.Value = template.HTML(utils.DateToString(theCase.Updated))
+
+	details.State.Title = "Closed"
+	if theCase.Closed {
+		details.State.Value = template.HTML("Yes " + utils.DateToString(theCase.DateClosed))
+	} else {
+		details.Open = true
+		details.State.Value = template.HTML("No")
+	}
+
+	details.ClientNum = theClient.Id
+	for _, item := range theCase.Comments {
+		newComment := CommentDisplay{}
+		newComment.GetCommentDisplay(item)
+		details.Reports = append(details.Reports, newComment)
+	}
+
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+	ctx.View("casedelete.html")
+}
+
+func removeCase(ctx iris.Context) {
+	var (
+		caseNum int
+		err     error
+	)
+
+	caseNum, err = ctx.Params().GetInt("casenum")
+	if err != nil {
+		ctx.Redirect("/cases", http.StatusFound)
+		return
+	}
+
+	theSession := ctx.Values().Get("session")
+
+	if !theSession.(users.Session).Admin {
+		ctx.Redirect("/cases", http.StatusFound)
+		return
+	}
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+
+	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+
+	err = caseColl.RemoveId(caseNum)
+	if err != nil {
+		log.Println("Error: Remove case", err)
+	}
+	ctx.Redirect("/cases", http.StatusFound)
+}
+
 func listCases(ctx iris.Context) {
 	var (
 		details []CaseList
@@ -344,7 +460,7 @@ func editCase(ctx iris.Context) {
 			log.Println("Error: decode editcase", err)
 		}
 		details.CaseWorker = template.HTML(details.CaseWorkerName)
-		err = details.Save()
+		err = details.save()
 		if err == nil {
 			theUrl := fmt.Sprintf("/case/%d", details.Id)
 			ctx.Redirect(theUrl, http.StatusFound)
@@ -509,7 +625,7 @@ func GetCases(pageNum int, match, sort bson.M) ([]CaseList, bool) {
 	return allCases, false
 }
 
-func (ce *CaseEdit) Save() error {
+func (ce *CaseEdit) save() error {
 	var (
 		theCase db.Case
 	)
@@ -566,11 +682,13 @@ func (ce *CaseEdit) Save() error {
 		sets[db.KFieldCaseNum] = ce.CaseNumber
 	}
 
-	if ce.CaseWorkerNum != theCase.CaseWorkerNum {
-		sets[db.KFieldCaseWorkerNum] = ce.CaseWorkerNum
-		if ce.CaseWorkerNum != 0 {
-			if ce.CaseWorkerName != theCase.CaseWorker {
-				sets[db.KFieldCaseWorker] = ""
+	if len(ce.CaseWorkerName) != 0 {
+		if ce.CaseWorkerNum != theCase.CaseWorkerNum {
+			sets[db.KFieldCaseWorkerNum] = ce.CaseWorkerNum
+			if ce.CaseWorkerNum != 0 {
+				if ce.CaseWorkerName != theCase.CaseWorker {
+					sets[db.KFieldCaseWorker] = ""
+				}
 			}
 		}
 	}
