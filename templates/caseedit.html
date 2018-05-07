@@ -7,7 +7,7 @@
     <div class="grid_12">
         <h5>{{.Details.ClientName}}</h5>
         {{template "error_display.html" .}}
-        <form class="inputform" action="/caseedit/{{.Details.Id}}" method="post">
+        <form class="inputform" action="/caseedit/{{.Details.ID}}" method="post">
             <div class="row">
                 <div class="grid_10">
                     <div class="grid_2">
@@ -38,7 +38,7 @@
                     </div>
                 </div>
             </div> <!-- end of row -->
-            <input type="hidden" name="id" value="{{.Details.Id}}">
+            <input type="hidden" name="id" value="{{.Details.ID}}">
             <input type="hidden" name="cwnum" id="cwnum" value="{{.Details.CaseWorkerNum}}">
             <input type="hidden" name="client" value="{{.Details.ClientNum}}">
             <input type="hidden" name="clientname" value="{{.Details.ClientName}}">

@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globalsign/mgo/bson"
 
 	"ssafa/crypto"
 	"ssafa/db"
@@ -12,7 +12,7 @@ import (
 
 type (
 	sliceRec struct {
-		Id      int
+		ID      int
 		First   string
 		Surname string
 	}
@@ -32,7 +32,7 @@ func OrderClients() {
 	iter := clientColl.Find(nil).Iter()
 	for iter.Next(&theClient) {
 		newRec := sliceRec{}
-		newRec.Id = theClient.Id
+		newRec.ID = theClient.ID
 		newRec.First = strings.ToLower(crypto.Decrypt(theClient.First))
 		newRec.Surname = strings.ToLower(crypto.Decrypt(theClient.Surname))
 		allPeople = append(allPeople, newRec)
@@ -43,7 +43,7 @@ func OrderClients() {
 
 	posn := 10
 	for _, item := range allPeople {
-		clientColl.UpdateId(item.Id, bson.M{"$set": bson.M{db.KFieldClientsOrder: posn}})
+		clientColl.UpdateId(item.ID, bson.M{"$set": bson.M{db.KFieldClientsOrder: posn}})
 		posn += 10
 	}
 }

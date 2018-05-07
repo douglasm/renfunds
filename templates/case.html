@@ -13,16 +13,16 @@
                     </div>
                     <div class="grid_2">
                         <div class="button-group">
-                            <a href="/caseedit/{{.Details.Id}}" class="button">Edit</a>
+                            <a href="/caseedit/{{.Details.ID}}" class="button">Edit</a>
                         </div>
                     </div>
                     <div class="grid_2">
                     {{if .Header.Admin}}
                         <div class="button-group">
                             {{if .Details.Open}}
-                            <a href="/caseclosed/{{.Details.Id}}" class="button">Close</a>
+                            <a href="/caseclosed/{{.Details.ID}}" class="button">Close</a>
                             {{else}}
-                            <a href="/caseopened/{{.Details.Id}}" class="button">Open</a>
+                            <a href="/caseopened/{{.Details.ID}}" class="button">Open</a>
                             {{end}}
                         </div>
                     {{end}}
@@ -30,7 +30,7 @@
                     <div class="grid_2">
                     {{if .Header.Admin}}
                         <div class="button-group">
-                            <a href="/casedelete/{{.Details.Id}}" class="button">Delete</a>
+                            <a href="/casedelete/{{.Details.ID}}" class="button">Delete</a>
                         </div>
                     {{end}}
                     </div>
@@ -49,12 +49,12 @@
                         <th></th>
                     </thead>
                     <tbody>
-                        <form action="/commentcase/{{.Details.Id}}" method="post">
+                        <form action="/commentcase/{{.Details.ID}}" method="post">
                             <tr class="commentform">
                                 <td></td>
                                 <td><textarea name="comment" placeholder="New comment" rows="3"></textarea></td>
                                 <td>
-                                    <input type="hidden" name="id" value="{{.Details.Id}}">
+                                    <input type="hidden" name="id" value="{{.Details.ID}}">
                                     <input name="commit" type="submit" value="Add comment">
                                 </td>
                             </tr>

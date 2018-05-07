@@ -4,15 +4,21 @@
       <label for="show-menu" class="show-menu">Show Menu</label>
       <input type="checkbox" id="show-menu" role="button">
       <ul id="menu">
-        <li><a href="/cases">Cases</a></li>
-        <li><a href="/clients">Clients</a></li>
-        <!-- <li><a href="/funds">Funds</a></li> -->
-        <!-- <li><a href="/suggestions">Suggestions</a></li> -->
-        {{if .Header.Admin}}
-          <li><a href="/admin">Admin</a></li>
+        {{if .Header.Loggedin}}
+          <li><a href="/cases">Cases</a></li>
+          <li><a href="/clients">Clients</a></li>
+          <!-- <li><a href="/funds">Funds</a></li> -->
+          <!-- <li><a href="/suggestions">Suggestions</a></li> -->
+          {{if .Header.Admin}}
+            <!-- <li><a href="/vouchers">PVs</a></li> -->
+            <!-- <li><a href="/proofs">APC</a></li> -->
+            <li><a href="/admin">Admin</a></li>
+          {{end}}
+          <li>&nbsp;&nbsp;</li>
+          <li><a href="/logout">Logout</a></li>
+        {{else}}
+          <li><a href="/login">Login</a></li>
         {{end}}
-        <li>&nbsp;&nbsp;</li>
-        <li><a href="/logout">Logout</a></li>
       </ul>
     </nav>
   </div>  <!-- end of grid_12 -->

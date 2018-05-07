@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/globalsign/mgo"
 	"github.com/gorilla/securecookie"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/middleware/logger"
-	"gopkg.in/mgo.v2"
 
 	"ssafa/admin"
 	"ssafa/cases"
@@ -22,6 +22,12 @@ import (
 	"ssafa/db"
 	"ssafa/types"
 	"ssafa/users"
+	// "ssafa/mail"
+)
+
+const (
+	usersCopyDB    = "userscopy"
+	countersCopyDB = "counterscopy"
 )
 
 type (
@@ -68,6 +74,15 @@ var (
 		"/",
 		"/login",
 		"/404",
+		"/resetpassword",
+		"/resetsent",
+		"/reset",
+		"/activate",
+	}
+
+	nonLoggedPagesCode = [...]string{
+		"/reset/",
+		"/activate/",
 	}
 )
 
@@ -153,6 +168,13 @@ func main() {
 
 	clients.OrderClients()
 
+	// users.CheckPassword("pete livesey footless crow")
+	// users.CheckPassword("P@ssw0rd")
+
+	// mail.SendActivate("dgmccallum@gmail.com", "bananas")
+
+	// restoreUsers()
+
 	// http://localhost:9039
 	thePort := fmt.Sprintf(":%d", config.Port)
 	app.Run(iris.Addr(thePort), iris.WithCharset("UTF-8")) // defaults to that but you can change it.
@@ -203,10 +225,6 @@ func authCheck(ctx iris.Context) {
 		}
 	}
 
-	// fmt.Println("In authCheck", path)
-	// fmt.Println("Referer", ctx.GetHeader("Referer"))
-	// fmt.Println("Origin", ctx.GetHeader("Origin"))
-
 	if !theSession.ValidCookie(ctx.GetCookie("session")) {
 		// fmt.Println("The path is:", path)
 		validPage := false
@@ -216,6 +234,14 @@ func authCheck(ctx iris.Context) {
 				break
 			}
 		}
+
+		for _, item := range nonLoggedPagesCode {
+			if strings.Index(strings.ToLower(path), item) == 0 {
+				validPage = true
+				break
+			}
+		}
+
 		// fmt.Println("Not logged in")
 		if !validPage {
 			// fmt.Println("Not a valid page")
@@ -230,7 +256,7 @@ func authCheck(ctx iris.Context) {
 	ctx.Values().Set("user", theSession.UserNumber)
 	ctx.Values().Set("session", theSession)
 
-	if ctx.Method() == "POST" {
+	if ctx.Method() == http.MethodPost {
 		// fmt.Println(ctx.Header(name, value))
 		// fmt.Println("checking a post")
 		// nonceString := ctx.FormValue("checkfield")
@@ -264,13 +290,7 @@ func newRequestLogger() (h iris.Handler, close func() error) {
 		// Columns: true,
 	}
 
-	// logFile := newLogFile()
-	// close = func() error {
-	// 	err := logFile.Close()
-	// 	return err
-	// }
-
-	c.LogFunc = func(now time.Time, latency time.Duration, status, ip, method, path string, message interface{}) {
+	c.LogFunc = func(now time.Time, latency time.Duration, status, ip, method, path string, message interface{}, headerMessage interface{}) {
 		// output := logger.Columnize(now.Format("2006/01/02 - 15:04:05"), latency, status, ip, method, path, message)
 		f := float64(latency)
 		f /= 1000000.0
@@ -324,4 +344,33 @@ func generateKeys() {
 		return
 	}
 	// fmt.Printf("%x\n", theBytes)
+}
+
+func restoreUsers() {
+	var (
+		theUser    db.User
+		theCounter db.Counter
+	)
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	usersCollection := session.DB(db.MainDB).C(db.CollectionUsers)
+	countersCollection := session.DB(db.MainDB).C(db.CollectionCounters)
+	usersCopyCollection := session.DB(db.MainDB).C(usersCopyDB)
+	countersCopyCollection := session.DB(db.MainDB).C(countersCopyDB)
+
+	usersCollection.DropCollection()
+	countersCollection.DropCollection()
+
+	iter := usersCopyCollection.Find(nil).Iter()
+	for iter.Next(&theUser) {
+		usersCollection.Insert(&theUser)
+	}
+	iter.Close()
+
+	iter = countersCopyCollection.Find(nil).Iter()
+	for iter.Next(&theCounter) {
+		countersCollection.Insert(&theCounter)
+	}
+	iter.Close()
 }

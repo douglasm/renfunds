@@ -9,8 +9,8 @@ import (
 	// "sort"
 
 	"github.com/kataras/iris"
-	// "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	// "github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 
 	"ssafa/crypto"
 	"ssafa/db"
@@ -21,7 +21,7 @@ import (
 
 type (
 	CaseDisplay struct {
-		Id         int
+		ID         int
 		Open       bool
 		ClientName types.RowItem
 		CaseNumber string
@@ -35,7 +35,7 @@ type (
 	}
 
 	CaseEdit struct {
-		Id             int           `schema:"id"`
+		ID             int           `schema:"id"`
 		CaseNumber     string        `schema:"casenumber"`
 		CaseWorker     template.HTML `schema:"-"`
 		CaseWorkerName string        `schema:"cwname"`
@@ -80,7 +80,8 @@ func showCase(ctx iris.Context) {
 
 	err = clientColl.FindId(theCase.ClientNum).One(&theClient)
 
-	details.Id = caseNum
+	details.ID = caseNum
+	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 
 	header.Title = "RF: Case " + theCase.CaseNumber
@@ -100,7 +101,7 @@ func showCase(ctx iris.Context) {
 	}
 
 	details.CMSNumber.Title = "CMS number"
-	details.CMSNumber.Value = template.HTML(theCase.CMSId)
+	details.CMSNumber.Value = template.HTML(theCase.CMSID)
 
 	details.Opened.Title = "Opened"
 	details.Opened.Value = template.HTML(utils.DateToString(theCase.Created))
@@ -116,7 +117,7 @@ func showCase(ctx iris.Context) {
 		details.State.Value = template.HTML("No")
 	}
 
-	details.ClientNum = theClient.Id
+	details.ClientNum = theClient.ID
 	for _, item := range theCase.Comments {
 		newComment := CommentDisplay{}
 		newComment.GetCommentDisplay(item)
@@ -145,6 +146,7 @@ func deleteCase(ctx iris.Context) {
 	}
 
 	theSession := ctx.Values().Get("session")
+	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 
 	if !header.Admin {
@@ -166,7 +168,7 @@ func deleteCase(ctx iris.Context) {
 
 	err = clientColl.FindId(theCase.ClientNum).One(&theClient)
 
-	details.Id = caseNum
+	details.ID = caseNum
 
 	header.Title = "RF: Delete Case " + theCase.CaseNumber
 
@@ -185,7 +187,7 @@ func deleteCase(ctx iris.Context) {
 	}
 
 	details.CMSNumber.Title = "CMS number"
-	details.CMSNumber.Value = template.HTML(theCase.CMSId)
+	details.CMSNumber.Value = template.HTML(theCase.CMSID)
 
 	details.Opened.Title = "Opened"
 	details.Opened.Value = template.HTML(utils.DateToString(theCase.Created))
@@ -201,7 +203,7 @@ func deleteCase(ctx iris.Context) {
 		details.State.Value = template.HTML("No")
 	}
 
-	details.ClientNum = theClient.Id
+	details.ClientNum = theClient.ID
 	for _, item := range theCase.Comments {
 		newComment := CommentDisplay{}
 		newComment.GetCommentDisplay(item)
@@ -267,6 +269,7 @@ func listCases(ctx iris.Context) {
 	details, _ = GetCases(pageNum, match, sort)
 
 	header.Title = "RF: Cases"
+	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
@@ -296,6 +299,7 @@ func openCases(ctx iris.Context) {
 	details, _ = GetCases(pageNum, match, sort)
 
 	header.Title = "RF: Open Cases"
+	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
@@ -325,6 +329,7 @@ func unassignedCases(ctx iris.Context) {
 	details, _ = GetCases(pageNum, match, sort)
 
 	header.Title = "RF: Unassigned Cases"
+	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
@@ -354,6 +359,7 @@ func inactiveCases(ctx iris.Context) {
 	details, _ = GetCases(pageNum, match, sort)
 
 	header.Title = "RF: Inactive Cases"
+	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
@@ -406,14 +412,14 @@ func addCase(ctx iris.Context) {
 	defer session.Close()
 	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
 
-	theCase.Id = db.GetNextSequence(db.CollectionCases)
+	theCase.ID = db.GetNextSequence(db.CollectionCases)
 	theCase.ClientNum = clientNum
 	theCase.Created = utils.CurrentDate()
 	theCase.Updated = theCase.Created
 
 	caseColl.Insert(&theCase)
 
-	theUrl := fmt.Sprintf("/case/%d", theCase.Id)
+	theUrl := fmt.Sprintf("/case/%d", theCase.ID)
 	ctx.Redirect(theUrl, http.StatusFound)
 }
 
@@ -443,9 +449,9 @@ func editCase(ctx iris.Context) {
 		if err != nil {
 			log.Println("Error: editcase get", err)
 		}
-		details.Id = caseNum
+		details.ID = caseNum
 		details.CaseNumber = theCase.CaseNumber
-		details.CMSNumber = theCase.CMSId
+		details.CMSNumber = theCase.CMSID
 		details.ClientNum = theCase.ClientNum
 		details.ClientName = getClientName(theCase.ClientNum)
 		if theCase.CaseWorkerNum == 0 {
@@ -462,7 +468,7 @@ func editCase(ctx iris.Context) {
 		details.CaseWorker = template.HTML(details.CaseWorkerName)
 		err = details.save()
 		if err == nil {
-			theUrl := fmt.Sprintf("/case/%d", details.Id)
+			theUrl := fmt.Sprintf("/case/%d", details.ID)
 			ctx.Redirect(theUrl, http.StatusFound)
 			return
 		}
@@ -470,6 +476,7 @@ func editCase(ctx iris.Context) {
 	}
 
 	header.Admin = theSession.(users.Session).Admin
+	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Title = "Edit case"
 	header.Scripts = append(header.Scripts, "getusers")
 
@@ -491,6 +498,34 @@ func updateCase(theUpdate bson.M, caseId int) {
 	if err != nil {
 		log.Println("Error: Case update:", err)
 	}
+}
+
+func searchCase(ctx iris.Context) {
+	var (
+		details []CaseList
+		header  types.HeaderRecord
+	)
+
+	theSession := ctx.Values().Get("session")
+
+	searchStr := ctx.FormValue("search")
+
+	reg := bson.M{"$regex": searchStr, "$options": "-i"}
+
+	theQuery := bson.M{"$or": types.S{{db.KFieldCaseNum: reg}, {db.KFieldCaseCMS: reg}}}
+
+	match := bson.M{"$match": theQuery}
+	sort := bson.M{"$sort": bson.M{db.KFieldCaseCreated: 1}}
+
+	details, _ = GetCases(0, match, sort)
+
+	header.Title = "RF: Cases"
+	header.Loggedin = theSession.(users.Session).LoggedIn
+	header.Admin = theSession.(users.Session).Admin
+
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+	ctx.View("cases.html")
 }
 
 func addComment(ctx iris.Context) {
@@ -593,11 +628,11 @@ func GetCases(pageNum int, match, sort bson.M) ([]CaseList, bool) {
 			return allCases, true
 		}
 		// fmt.Println(result)
-		newCase := CaseList{Id: result.Id, CaseNumber: result.CaseNumber, CMSNumber: result.CMSId}
+		newCase := CaseList{ID: result.ID, CaseNumber: result.CaseNumber, CMSNumber: result.CMSID}
 		if len(newCase.CaseNumber) == 0 {
 			newCase.CaseNumber = "None"
 		}
-		newCase.ClientId = result.Client[0].Id
+		newCase.ClientID = result.Client[0].ID
 		newCase.Name = crypto.Decrypt(result.Client[0].First) + " " + crypto.Decrypt(result.Client[0].Surname)
 
 		if len(result.User) > 0 {
@@ -641,7 +676,7 @@ func (ce *CaseEdit) save() error {
 		ce.CaseNumber = strings.ToUpper(ce.CaseNumber)
 		iter := caseColl.Find(bson.M{db.KFieldCaseNum: ce.CaseNumber}).Iter()
 		for iter.Next(&theCase) {
-			if theCase.Id != ce.Id {
+			if theCase.ID != ce.ID {
 				gotOne = true
 				break
 			}
@@ -654,27 +689,29 @@ func (ce *CaseEdit) save() error {
 	}
 
 	ce.CMSNumber = strings.TrimSpace(ce.CMSNumber)
-	if len(ce.CMSNumber) > 0 {
-		iter := caseColl.Find(bson.M{db.KFieldCaseCMS: ce.CMSNumber}).Iter()
-		for iter.Next(&theCase) {
-			if theCase.Id != ce.Id {
-				gotOne = true
-				break
-			}
-		}
-		iter.Close()
-
-		if gotOne {
-			return ErrorDateCMSUsed
-		}
+	if len(ce.CMSNumber) < 5 {
+		return errorCMSMissing
 	}
 
-	err := caseColl.FindId(ce.Id).One(&theCase)
+	iter := caseColl.Find(bson.M{db.KFieldCaseCMS: ce.CMSNumber}).Iter()
+	for iter.Next(&theCase) {
+		if theCase.ID != ce.ID {
+			gotOne = true
+			break
+		}
+	}
+	iter.Close()
+
+	if gotOne {
+		return ErrorDateCMSUsed
+	}
+
+	err := caseColl.FindId(ce.ID).One(&theCase)
 	if err != nil {
 		log.Println("Error: case save read", err)
 	}
 	sets := bson.M{}
-	if ce.CMSNumber != theCase.CMSId {
+	if ce.CMSNumber != theCase.CMSID {
 		sets[db.KFieldCaseCMS] = ce.CMSNumber
 	}
 
@@ -693,7 +730,7 @@ func (ce *CaseEdit) save() error {
 		}
 	}
 
-	updateCase(sets, ce.Id)
+	updateCase(sets, ce.ID)
 
 	return nil
 }

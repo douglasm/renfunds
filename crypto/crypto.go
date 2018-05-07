@@ -210,6 +210,19 @@ func RandomLetters(n int) string {
 
 	total := len(letters)
 	b := make([]rune, n)
+	mr.Seed(time.Now().UnixNano())
+	for i := range b {
+		b[i] = letters[randInt(0, total)]
+	}
+	return string(b)
+}
+
+func RandomLower(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+
+	total := len(letters)
+	b := make([]rune, n)
+	mr.Seed(time.Now().UnixNano())
 	for i := range b {
 		b[i] = letters[randInt(0, total)]
 	}
@@ -221,6 +234,7 @@ func RandomChars(n int) string {
 
 	total := len(letters)
 	b := make([]rune, n)
+	mr.Seed(time.Now().UnixNano())
 	for i := range b {
 		b[i] = letters[randInt(0, total)]
 	}
@@ -239,7 +253,6 @@ func randInt(min int, max int) int {
 	maxVal := *big.NewInt(int64(diff))
 	n, err = rand.Int(rand.Reader, &maxVal)
 	if err != nil {
-		mr.Seed(time.Now().Unix())
 		val := mr.Intn(max - min)
 		return val + min
 	}

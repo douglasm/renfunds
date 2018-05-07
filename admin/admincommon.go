@@ -10,8 +10,8 @@ import (
 
 	"github.com/gorilla/schema"
 	"github.com/kataras/iris"
-	// "gopkg.in/mgo.v2"
-	// "gopkg.in/mgo.v2/bson"
+	// "github.com/globalsign/mgo"
+	// "github.com/globalsign/mgo/bson"
 	// "ssafa/crypto"
 	// "ssafa/db"
 	// "ssafa/users"
@@ -21,7 +21,7 @@ import (
 
 type (
 	managePerson struct {
-		Id         int
+		ID         int
 		Name       string
 		First      string
 		Surname    string
@@ -35,13 +35,17 @@ type (
 	}
 
 	personAdd struct {
-		Id       int    `schema:"id"`
+		ID       int    `schema:"id"`
 		First    string `schema:"first"`
 		Surname  string `schema:"surname"`
 		UserName string `schema:"username"`
 		EMail    string `schema:"email"`
+		Phone    string `schema:"phone"`
+		Mobile   string `schema:"mobile"`
 		Role     string `schema:"role"`
 		Based    string `schema:"based"`
+		Address  string `schema:"address"`
+		Postcode string `schema:"postcode"`
 		Admin    bool   `schema:"-"`
 		AdminStr string `schema:"admin"`
 		Commit   string `schema:"commit"`
@@ -68,6 +72,7 @@ var (
 	errorNoRole        = errors.New("Please enter a position")
 	errorNoUsername    = errors.New("Please enter a username")
 	errorShortUsername = errors.New("The username has to be at least 4 characters")
+	errorUsernameUsed  = errors.New("The username is already in use")
 )
 
 func SetRoutes(app *iris.Application) {

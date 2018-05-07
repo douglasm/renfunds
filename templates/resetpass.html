@@ -1,0 +1,47 @@
+{{template "header.html" .Header}}
+
+<body>
+
+<div class="row">
+  <div class="grid_9">
+    <br />
+    <h5>Password reset </h5>
+    {{template "error_display.html" .}}
+    {{with .Details}}
+      <form class="login_form" action="/reset{{if .HasCode}}/{{.Code}}{{end}}" method="post">
+        {{if .HasCode}}
+          <input type="hidden" name="code" id="ac" placeholder="Code" value="{{.Code}}" size="30">
+        {{else}}
+          <label for="ac"><strong>Reset code:</strong></label><br />
+          <p>
+            <input type="text" name="code" id="ac" placeholder="Code" value="{{.Code}}" size="30" autofocus>
+          </p>
+        {{end}}
+        <label for="un"><strong>Username:</strong></label><br />
+        <p>
+          <input type="text" name="un" id="un" placeholder="User Name" value="{{.Username}}" size="30" {{if .HasCode}}autofocus{{end}}>
+        </p>
+        <label for="pwd0"><strong>Password:</strong></label><br />
+        <p>
+          <input type="text" name="pwd0" id="pwd0" placeholder="Password" value="{{.Pass1}}" size="30">
+        </p>
+        <label for="pwd1"><strong>Password again:</strong></label><br />
+        <p>
+          <input type="text" name="pwd1" id="pwd1" placeholder="Password again" value="{{.Pass2}}" size="30">
+        </p>
+        <p><a href="#" onclick="toggle_password('pwd0', 'pwd1');" id="showhide">Hide password</a></p>
+        <p>
+          Passwords can be any characters you want, they do not have to be letters or numbers, they can be emojis
+          🎃 🎒 🎎, or foreign characters Ƕ Ǧ Ǯ. If you are only using letters or numbers the password must be at 
+          least 10 characters and for foreign characters/emojis 6 characters. You can mix the two.
+          Passwords are checked to see if they have been found in a data breach, if so they cannot be used.
+        </p>
+        <input type="hidden" name="checkfield" value="{{.Checkfield}}">
+      <input name="commit" type="submit" value="Reset password">
+    </form>
+    {{end}}
+  </div> <!-- end of grid_9 -->
+</div> <!-- end of row -->
+
+</body>
+</html>

@@ -17,11 +17,11 @@ function getUsers(){
 function usersFunction(thetext) {
     var obj = JSON.parse(thetext);
     if(obj == null){
-        document.getElementById("cwij").textContent="";
+        document.getElementById("cwij").innerHTML="";
         return;
     }
     if(obj.length < 1){
-        document.getElementById("cwij").textContent="";
+        document.getElementById("cwij").innerHTML="";
         return;
     }
 

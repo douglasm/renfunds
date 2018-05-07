@@ -28,9 +28,9 @@
                     <tbody>
                         {{range $elem := .Details}}
                         <tr>
-                            <td><a href="/case/{{$elem.Id}}">{{$elem.CaseNumber}}</a></td>
+                            <td><a href="/case/{{$elem.ID}}">{{$elem.CaseNumber}}</a></td>
                             <td>{{$elem.CMSNumber}}</td>
-                            <td><a href="/client/{{$elem.ClientId}}">{{$elem.Name}}</a></td>
+                            <td><a href="/client/{{$elem.ClientID}}">{{$elem.Name}}</a></td>
                             <td>{{$elem.Opened}}</td>
                             <td>{{$elem.Updated}}</td>
                         </tr>

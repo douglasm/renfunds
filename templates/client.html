@@ -6,8 +6,8 @@
 <div class="row">
     <div class="grid_9">
         <h4>{{.Details.First}} {{.Details.Surname}}
-            &nbsp;&nbsp;<a href="/editclient/{{.Details.Id}}"
-            class="button">Edit</a>
+            &nbsp;&nbsp;<a href="/editclient/{{.Details.ID}}"
+            class="button">Edit</a> &nbsp;&nbsp;<a href="/caseadd/{{.Details.ID}}" class="button">Add case</a>
          </h4>
 
         <div clas="row">
@@ -35,12 +35,12 @@
                 <th>Case number</th>
                 <th>CMS number</th>
                 <th>Case Worker</th>
-                <th>State <a href="/caseadd/{{.Details.Id}}" class="button">Add</a></th>
+                <th>State</th>
             </thead>
             <tbody>
                 {{range $element := .Cases}}
                     <tr>
-                        <td align="left"><a href="/case/{{$element.Id}}">{{$element.CaseNumber}}</a></td>
+                        <td align="left"><a href="/case/{{$element.ID}}">{{$element.CaseNumber}}</a></td>
                         <td align="left">{{$element.CMSNumber}}</td>
                         <td align="left">{{$element.CaseWorker}}</td>
                         <td align="left">{{$element.State}}</td>
@@ -52,7 +52,7 @@
             <p>
                 No cases
                 <div class="button-group">
-                    <a href="/caseadd/{{.Details.Id}}" class="button">Add</a>
+                    <a href="/caseadd/{{.Details.ID}}" class="button">Add</a>
                 </div>
             </p>
         {{end}}
@@ -66,12 +66,12 @@
                 <th></th>
             </thead>
             <tbody>
-                <form action="/commentclient/{{.Details.Id}}" method="post">
+                <form action="/commentclient/{{.Details.ID}}" method="post">
                     <tr class="commentform">
                         <td></td>
                         <td><textarea name="comment" placeholder="New comment" rows="3"></textarea></td>
                         <td>
-                            <input type="hidden" name="id" value="{{.Details.Id}}">
+                            <input type="hidden" name="id" value="{{.Details.ID}}">
                             <input name="commit" type="submit" value="Add comment">
                         </td>
                     </tr>

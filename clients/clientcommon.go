@@ -2,16 +2,16 @@ package clients
 
 import (
 	"errors"
-	"fmt"
+	// "fmt"
 	"sort"
 	"strconv"
 	"strings"
 	// "log"
 
+	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/schema"
 	"github.com/kataras/iris"
-	"gopkg.in/mgo.v2/bson"
-	// "gopkg.in/mgo.v2"
+	// "github.com/globalsign/mgo"
 
 	"ssafa/crypto"
 	"ssafa/db"
@@ -19,7 +19,7 @@ import (
 
 type (
 	NameRec struct {
-		Id      int
+		ID      int
 		First   string
 		Surname string
 	}
@@ -75,16 +75,18 @@ func SetRoutes(app *iris.Application) {
 	app.Get("/clientcomment/{clientnum:int}/{commentnum:int}", editComment)
 	app.Post("/clientcomment/{clientnum:int}/{commentnum:int}", editComment)
 	// app.Get("/client/{clientnum:int}", showClient)
+	app.Get("/clientfix/{usernum:int}", clientFix)
+	app.Post("/clientfix/{usernum:int}", clientFix)
 }
 
 func ReOrder() {
-	session := db.MongoSession.Copy()
-	defer session.Close()
-	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+	// session := db.MongoSession.Copy()
+	// defer session.Close()
+	// clientColl := session.DB(db.MainDB).C(db.CollectionClients)
 
-	num, err := clientColl.Find(nil).Count()
+	// num, err := clientColl.Find(nil).Count()
 
-	fmt.Println("There are", num, err)
+	// fmt.Println("There are", num, err)
 }
 
 func orderNames() {
@@ -100,24 +102,24 @@ func orderNames() {
 
 	iter := clientColl.Find(nil).Sort(db.KFieldClientsOrder).Iter()
 	for iter.Next(&theClient) {
-		orderMap[theClient.Id] = theClient.Order
+		orderMap[theClient.ID] = theClient.Order
 
-		newName := NameRec{Id: theClient.Id}
+		newName := NameRec{ID: theClient.ID}
 		newName.First = strings.ToLower(theClient.First)
 		newName.Surname = strings.ToLower(theClient.Surname)
-		newName.Id = theClient.Id
+		newName.ID = theClient.ID
 		theList = append(theList, newName)
 	}
 	iter.Close()
 
 	sort.Sort(ByClientName{theList})
 	for i, item := range theList {
-		offset, ok := orderMap[item.Id]
+		offset, ok := orderMap[item.ID]
 		if offset == i && ok {
 			continue
 		}
 		set := bson.M{db.KFieldClientsOrder: i}
-		clientColl.UpdateId(item.Id, bson.M{"$set": set})
+		clientColl.UpdateId(item.ID, bson.M{"$set": set})
 		// fmt.Println(num, item)
 	}
 }

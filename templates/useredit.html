@@ -7,7 +7,7 @@
     <div class="grid_12">
         <h5>{{.Details.Name}}</h5>
         {{template "error_display.html" .}}
-        <form class="inputform" action="/useredit/{{.Details.Id}}" method="post">
+        <form class="inputform" action="/useredit/{{.Details.ID}}" method="post">
             <div class="row">
                 <div class="grid_10">
                     <div class="grid_2">
@@ -109,7 +109,7 @@
                     </div>
                 </div>
             </div> <!-- end of row -->
-            <input type="hidden" name="id" value="{{.Details.Id}}">
+            <input type="hidden" name="id" value="{{.Details.ID}}">
             <div class="row">
                 <div class="grid_10">
                     <div class="grid_2">

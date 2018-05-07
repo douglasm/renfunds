@@ -1,0 +1,41 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h5>Activate profile </h5>
+        {{template "error_display.html" .}}
+        <form class="login_form" action="/activate/{{.Details.Code}}" method="post">
+          {{with .Details}}
+            <label for="un"><strong>Username:</strong></label><br />
+            <p>
+              <input type="text" name="username" id="un" placeholder="User Name" value="{{.Username}}" size="30" autofocus>
+            </p>
+            <label for="pwd0"><strong>Password:</strong></label><br />
+            <p>
+              <input type="text" name="pass1" id="pwd0" placeholder="Password" value="{{.Password1}}" size="30">
+            </p>
+            <label for="pwd1"><strong>Password again:</strong></label><br />
+            <p>
+              <input type="text" name="pass2" id="pwd1" placeholder="Password again" value="{{.Password2}}" size="30">
+            </p>
+            <p><a href="#" onclick="toggle_password('pwd0', 'pwd1');" id="showhide">Hide password</a></p>
+            <p>
+              Passwords can be any characters you want, they do not have to be letters or numbers, they can be emojis
+              🎃 🎒 🎎, or foreign characters Ƕ Ǧ Ǯ. If you are only using letters or numbers the password must be at 
+              least 10 characters and for foreign characters/emojis 6 characters. You can mix the two.
+              Passwords are checked to see if they have been found in a data breach, if so they cannot be used.
+            </p>
+            <input type="hidden" name="id" value="{{.ID}}">
+            <input type="hidden" name="code" value="{{.Code}}">
+            <input type="hidden" name="checkfield" value="{{.Checkfield}}">
+          {{end}}
+          <input name="commit" type="submit" value="Activate">
+        </form>
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+</body>
+</html>

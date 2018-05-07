@@ -11,8 +11,8 @@ import (
 	"time"
 
 	// "github.com/gorilla/schema"
+	"github.com/globalsign/mgo/bson"
 	"github.com/kataras/iris"
-	"gopkg.in/mgo.v2/bson"
 
 	"ssafa/cases"
 	"ssafa/crypto"
@@ -23,7 +23,7 @@ import (
 
 type (
 	ClientShow struct {
-		Id      int
+		ID      int
 		Case    string
 		First   string
 		Surname string
@@ -33,7 +33,7 @@ type (
 	ClientList []ClientShow
 
 	ClientDisplay struct {
-		Id         int
+		ID         int
 		First      string
 		Surname    string
 		Phone      string
@@ -50,7 +50,7 @@ type (
 	}
 
 	ClientEdit struct {
-		Id         int                    `schema:"id"`
+		ID         int                    `schema:"id"`
 		First      string                 `schema:"first"`
 		Surname    string                 `schema:"surname"`
 		DOB        string                 `schema:"dob"`
@@ -68,7 +68,7 @@ type (
 	}
 
 	CommentEdit struct {
-		Id      int    `schema:"id"`
+		ID      int    `schema:"id"`
 		Message string `schema:"-"`
 		Link    string `schema:"-"`
 		Comment string `schema:"comment"`
@@ -130,6 +130,9 @@ func editClientHandler(ctx iris.Context) {
 		return
 	}
 
+	header.Loggedin = theSession.(users.Session).LoggedIn
+	header.Admin = theSession.(users.Session).Admin
+
 	clientNum, err := ctx.Params().GetInt("clientnum")
 	if err != nil {
 		clientNum = 0
@@ -153,7 +156,6 @@ func editClientHandler(ctx iris.Context) {
 		}
 		err = details.checkClient()
 		if err == nil {
-			fmt.Println("Saving", clientNum)
 			if clientNum == 0 {
 				clientNum = details.saveClient()
 				OrderClients()
@@ -243,6 +245,8 @@ func showClient(ctx iris.Context) {
 		return
 	}
 
+	theSession := ctx.Values().Get("session")
+
 	session := db.MongoSession.Copy()
 	defer session.Close()
 	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
@@ -252,9 +256,11 @@ func showClient(ctx iris.Context) {
 		log.Println("Error: Client read error:", err)
 	}
 	header.Title = "RF: Client"
+	header.Loggedin = theSession.(users.Session).LoggedIn
+	header.Admin = theSession.(users.Session).Admin
 
 	decryptClient(&theClient)
-	details.Id = theClient.Id
+	details.ID = theClient.ID
 	details.First = theClient.First
 	details.Surname = theClient.Surname
 	tempStr := html.EscapeString(theClient.Address)
@@ -277,9 +283,9 @@ func showClient(ctx iris.Context) {
 	}
 	details.ServiceNum = theClient.ServiceNum
 	details.Unit = theClient.Unit
-	details.Comments = getComments(theClient.Comments, details.Id)
+	details.Comments = getComments(theClient.Comments, details.ID)
 
-	allCases := getCases(theClient.Id)
+	allCases := getCases(theClient.ID)
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
@@ -384,7 +390,7 @@ func editComment(ctx iris.Context) {
 
 	details.Message = "Edit client comment"
 	details.Link = fmt.Sprintf("/clientcomment/%d/%d", clientNum, commentNum)
-	details.Id = clientNum
+	details.ID = clientNum
 	details.Num = commentNum
 
 	switch ctx.Method() {
@@ -419,6 +425,84 @@ func editComment(ctx iris.Context) {
 		if err != nil {
 			theUrl := fmt.Sprintf("/client/%d", clientNum)
 			ctx.Redirect(theUrl, http.StatusFound)
+			return
+		}
+
+		newComments := []db.Comment{}
+		for _, item := range theClient.Comments {
+			if item.Num == commentNum {
+				item.Comment = crypto.Encrypt(details.Comment)
+				gotOne = true
+			}
+			newComments = append(newComments, item)
+		}
+		if gotOne {
+			err = clientColl.UpdateId(clientNum, bson.M{"$set": bson.M{db.KFieldClientsComments: newComments}})
+			if err != nil {
+				log.Println("Update err:", err)
+			}
+		}
+
+		theUrl := fmt.Sprintf("/client/%d", clientNum)
+		ctx.Redirect(theUrl, http.StatusFound)
+		return
+	}
+
+	header.Loggedin = theSession.(users.Session).LoggedIn
+	header.Admin = theSession.(users.Session).Admin
+	header.Title = "RF: Edit client comment"
+
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+	ctx.ViewData("ErrorMessage", errorMessage)
+	ctx.View("commentedit.html")
+}
+
+func clientFix(ctx iris.Context) {
+	var (
+		theClient    db.Client
+		details      CommentEdit
+		header       types.HeaderRecord
+		clientNum    int
+		commentNum   int
+		gotOne       bool
+		errorMessage string
+		err          error
+	)
+
+	theSession := ctx.Values().Get("session")
+	if !theSession.(users.Session).LoggedIn {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	if !theSession.(users.Session).Admin {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	clientNum, err = ctx.Params().GetInt("clientnum")
+	if err != nil {
+		ctx.Redirect("/clients", http.StatusFound)
+		return
+	}
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+
+	switch ctx.Method() {
+	case http.MethodGet:
+		err = clientColl.FindId(clientNum).One(&theClient)
+		if err != nil {
+			ctx.Redirect("/clients", http.StatusFound)
+			return
+		}
+
+	case http.MethodPost:
+		err = clientColl.FindId(clientNum).One(&theClient)
+		if err != nil {
+			ctx.Redirect("/clients", http.StatusFound)
 			return
 		}
 
@@ -491,7 +575,7 @@ func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool
 			}
 		}
 		if len(theList) < types.KListLimit {
-			newClient := ClientShow{Id: theClient.Id}
+			newClient := ClientShow{ID: theClient.ID}
 			newClient.First = theClient.First
 			newClient.Surname = theClient.Surname
 			d, m, y := dateToDMY(theClient.DOB)
@@ -508,7 +592,7 @@ func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool
 
 func (ce *ClientEdit) fillEdit(theClient db.Client) {
 	decryptClient(&theClient)
-	ce.Id = theClient.Id
+	ce.ID = theClient.ID
 	ce.First = theClient.First
 	ce.Surname = theClient.Surname
 	d, m, y := dateToDMY(theClient.DOB)
@@ -628,7 +712,7 @@ func (ce *ClientEdit) saveClient() int {
 	defer session.Close()
 	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
 
-	theClient.Id = db.GetNextSequence(db.CollectionClients)
+	theClient.ID = db.GetNextSequence(db.CollectionClients)
 	theClient.First = crypto.Encrypt(ce.First)
 	theClient.Surname = crypto.Encrypt(ce.Surname)
 	theClient.Phone = crypto.Encrypt(ce.Phone)
@@ -650,7 +734,7 @@ func (ce *ClientEdit) saveClient() int {
 		log.Println("Error: Client save error:", err)
 	}
 
-	return theClient.Id
+	return theClient.ID
 }
 
 func (ce *ClientEdit) updateClient() bool {
@@ -663,7 +747,7 @@ func (ce *ClientEdit) updateClient() bool {
 	defer session.Close()
 	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
 
-	err := clientColl.FindId(ce.Id).One(&theClient)
+	err := clientColl.FindId(ce.ID).One(&theClient)
 	decryptClient(&theClient)
 	sets := bson.M{}
 	unsets := bson.M{}
@@ -767,7 +851,7 @@ func (ce *ClientEdit) updateClient() bool {
 
 	theClient.Changed = db.GetCurrentDate()
 
-	err = clientColl.UpdateId(ce.Id, update)
+	err = clientColl.UpdateId(ce.ID, update)
 	if err != nil {
 		log.Println("Update error:", err)
 	}
@@ -815,13 +899,13 @@ func getCases(clientNum int) []cases.CaseList {
 
 	iter := caseColl.Find(bson.M{db.KFieldCaseClientNum: clientNum}).Sort(db.KFieldCaseClosed, db.KFieldCaseUpdated).Iter()
 	for iter.Next(&theCase) {
-		newCase := cases.CaseList{Id: theCase.Id}
+		newCase := cases.CaseList{ID: theCase.ID}
 		if len(theCase.CaseNumber) > 0 {
 			newCase.CaseNumber = theCase.CaseNumber
 		} else {
 			newCase.CaseNumber = "None"
 		}
-		newCase.CMSNumber = theCase.CMSId
+		newCase.CMSNumber = theCase.CMSID
 		if theCase.CaseWorkerNum == 0 {
 			newCase.CaseWorker = crypto.Decrypt(theCase.CaseWorker)
 		} else {

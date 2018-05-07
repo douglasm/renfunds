@@ -1,0 +1,30 @@
+{{template "header.html" .Header}}
+
+<body>
+
+<div class="row">
+    <div class="grid_9">
+        <br />
+        <h5>Reset password </h5>
+        {{template "error_display.html" .}}
+        <form class="login_form" action="/resetpassword" method="post">
+            <label for="un"><strong>email or username:</strong></label><br />
+            <p>
+              <input type="text" name="un" id="un" placeholder="User Name" value="{{.Details.Username}}" size="30" autofocus>
+            </p>
+            <input type="hidden" name="checkfield" value="{{.Details.Checkfield}}">
+          <input name="commit" type="submit" value="Send E-mail">
+        </form>
+        <br />
+        <p>
+          Please enter your e-mail address or username. An e-mail will be sent to the relevant e-mail address
+          with a link which will allow you to reset your password. The reset link will be active for three hours,
+          then it will expire.</p>
+        <p>
+          If you enter an incorrect username or e-mail address you will still get a message an e-mail has been sent.
+        </p>
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+</body>
+</html>

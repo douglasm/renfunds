@@ -2,20 +2,21 @@ package admin
 
 import (
 	// "errors"
-	// "html/template"
 	"fmt"
 	"log"
 	"net/http"
 	"sort"
 	"strings"
+	"time"
 
 	// "github.com/gorilla/schema"
+	"github.com/globalsign/mgo/bson"
 	"github.com/kataras/iris"
-	"gopkg.in/mgo.v2/bson"
-	// "gopkg.in/mgo.v2"
+	// "github.com/globalsign/mgo"
 
 	"ssafa/crypto"
 	"ssafa/db"
+	"ssafa/mail"
 	"ssafa/types"
 	"ssafa/users"
 	"ssafa/utils"
@@ -32,6 +33,7 @@ func adminMain(ctx iris.Context) {
 	}
 
 	header.Title = "RF: Admin"
+	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
@@ -83,7 +85,7 @@ func adminPerson(ctx iris.Context) {
 	}
 	for iter.Next(&result) {
 		newPerson := managePerson{}
-		newPerson.Id = result.Id
+		newPerson.ID = result.ID
 		newPerson.First = crypto.Decrypt(result.First)
 		newPerson.Surname = crypto.Decrypt(result.Surname)
 		newPerson.Role = result.Position
@@ -93,13 +95,13 @@ func adminPerson(ctx iris.Context) {
 		} else {
 			newPerson.AdminStr = "No"
 		}
-		newPerson.AdminLink = fmt.Sprintf("/adminswap/%d/%d", newPerson.Id, sortNum)
+		newPerson.AdminLink = fmt.Sprintf("/adminswap/%d/%d", newPerson.ID, sortNum)
 		if result.InActive {
 			newPerson.ActiveStr = "No"
 		} else {
 			newPerson.ActiveStr = "Yes"
 		}
-		newPerson.ActiveLink = fmt.Sprintf("/activeswap/%d/%d", newPerson.Id, sortNum)
+		newPerson.ActiveLink = fmt.Sprintf("/activeswap/%d/%d", newPerson.ID, sortNum)
 		allPersonnel = append(allPersonnel, newPerson)
 	}
 
@@ -119,6 +121,7 @@ func adminPerson(ctx iris.Context) {
 	}
 
 	header.Title = "RF: Admin"
+	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
@@ -225,18 +228,20 @@ func adminAddPerson(ctx iris.Context) {
 	case http.MethodPost:
 		err := decoder.Decode(&details, ctx.FormValues())
 		if err != nil {
-			fmt.Println("Error: Decode adminadd:", err)
+			log.Println("Error: Decode adminadd:", err)
 		}
-		fmt.Printf("%+v\n", details)
+
 		err = details.check()
 		if err == nil {
-			ctx.Redirect("/adminPerson", http.StatusFound)
+			details.save()
+			ctx.Redirect("/adminperson", http.StatusFound)
 			return
 		}
 		errorMessage = err.Error()
 	}
 
 	header.Title = "RF: Admin"
+	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 
 	ctx.ViewData("Header", header)
@@ -246,6 +251,14 @@ func adminAddPerson(ctx iris.Context) {
 }
 
 func (pa *personAdd) check() error {
+	var (
+		theUser db.User
+	)
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	userColl := session.DB(db.MainDB).C(db.CollectionUsers)
+
 	if pa.AdminStr == "yes" {
 		pa.Admin = true
 	} else {
@@ -276,7 +289,53 @@ func (pa *personAdd) check() error {
 		return errorBadEMail
 	}
 
+	err := userColl.Find(bson.M{db.KFieldUserUserName: pa.UserName}).One(&theUser)
+	if err == nil {
+		return errorUsernameUsed
+	}
+
 	return nil
+}
+
+func (pa *personAdd) save() {
+	var (
+		theUser db.User
+		tempStr string
+	)
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	userColl := session.DB(db.MainDB).C(db.CollectionUsers)
+
+	theUser.First = crypto.Encrypt(pa.First)
+	theUser.Surname = crypto.Encrypt(pa.Surname)
+	if len(pa.First) > 0 {
+		if len(pa.Surname) > 0 {
+			tempStr = pa.First + " " + pa.Surname
+		} else {
+			tempStr = pa.First
+		}
+	} else {
+		tempStr = pa.Surname
+	}
+	theUser.Name = crypto.Encrypt(tempStr)
+	theUser.Username = pa.UserName
+	theUser.Address = crypto.Encrypt(pa.Address)
+	theUser.PostCode = crypto.Encrypt(pa.Postcode)
+	theUser.Phone = crypto.Encrypt(pa.Phone)
+	theUser.Mobile = crypto.Encrypt(pa.Mobile)
+	theUser.EMail = crypto.Encrypt(pa.EMail)
+	theUser.Position = pa.Role
+	theUser.Based = pa.Based
+	theUser.Admin = pa.Admin
+	theUser.ActivateCode = crypto.RandomLower(users.KActivateLength)
+	theUser.ActivateTime = time.Now().Unix() + users.KActivateTime
+	theUser.InActive = true
+
+	theUser.ID = db.GetNextSequence(db.CollectionUsers)
+	userColl.Insert(&theUser)
+
+	mail.SendActivate(pa.EMail, theUser.ActivateCode)
 }
 
 func (s manageList) Len() int {

@@ -7,7 +7,7 @@
     <div class="grid_12">
         <h4>{{.Details.First}} {{.Details.Surname}}</h4>
         {{template "error_display.html" .}}
-        <form class="inputform" action="/editclient/{{.Details.Id}}" method="post">
+        <form class="inputform" action="/editclient/{{.Details.ID}}" method="post">
             <div class="row">
                 <div class="grid_10">
                     <div class="grid_2">
@@ -124,7 +124,7 @@
                     <input name="commit" type="submit" value="Save">
                 </div> <!-- end of grid_10 -->
             </div> <!-- end of row -->
-            <input type="hidden" name="id" value="{{.Details.Id}}">
+            <input type="hidden" name="id" value="{{.Details.ID}}">
             <input type="hidden" name="checkfield" value="{{.Checkfield}}">
         </form>
         {{range $element := .Details.Comments}}

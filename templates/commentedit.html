@@ -6,9 +6,9 @@
 <div class="row">
     <div class="grid_9">
         <h5>{{.Details.Message}}</h5>
-        <form action="/clientcomment/{{.Details.Id}}/{{.Details.Num}}" class="commentform" method="post">
+        <form action="/clientcomment/{{.Details.ID}}/{{.Details.Num}}" class="commentform" method="post">
             <textarea name="comment" placeholder="Comment" rows="4">{{.Details.Comment}}</textarea>
-            <input type="hidden" name="id" value="{{.Details.Id}}">
+            <input type="hidden" name="id" value="{{.Details.ID}}">
             <input type="hidden" name="num" value="{{.Details.Num}}">
             <br />
             <br />

@@ -1,24 +1,38 @@
 package users
 
 import (
+	"crypto/sha1"
 	"fmt"
 	"html/template"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 
+	"github.com/globalsign/mgo/bson"
 	"github.com/kataras/iris"
-	"gopkg.in/mgo.v2/bson"
-	// "gopkg.in/mgo.v2"
+	// "github.com/globalsign/mgo"
 
 	"ssafa/crypto"
 	"ssafa/db"
 	"ssafa/types"
+	"ssafa/utils"
 )
 
 type (
+	activateRec struct {
+		ID         int    `schema:"id"`
+		Code       string `schema:"code"`
+		Username   string `schema:"username"`
+		Password1  string `schema:"pass1"`
+		Password2  string `schema:"pass2"`
+		Checkfield string `schema:"checkfield"`
+		Commit     string `schema:"commit"`
+	}
+
 	editRec struct {
-		Id          int           `schema:"id"`
+		ID          int           `schema:"id"`
 		First       string        `schema:"first"`
 		Surname     string        `schema:"surname"`
 		Name        string        `schema:"_"`
@@ -88,7 +102,7 @@ func getUserList(ctx iris.Context) {
 		theName := crypto.Decrypt(theUser.First) + " " + crypto.Decrypt(theUser.Surname)
 		// fmt.Println(theName, searchTerm)
 		if strings.Contains(strings.ToLower(theName), searchTerm) {
-			newUser := userChoice{Id: theUser.Id, Name: theName}
+			newUser := userChoice{ID: theUser.ID, Name: theName}
 			userList = append(userList, newUser)
 			count++
 		}
@@ -139,7 +153,7 @@ func editUser(ctx iris.Context) {
 			return
 		}
 
-		details.Id = userNum
+		details.ID = userNum
 		details.First = crypto.Decrypt(theUser.First)
 		details.Surname = crypto.Decrypt(theUser.Surname)
 		details.Position = theUser.Position
@@ -165,6 +179,7 @@ func editUser(ctx iris.Context) {
 	details.Name = strings.TrimSpace(details.First + " " + details.Surname)
 
 	header.Title = "Edit user " + details.Name
+	header.Loggedin = theSession.(Session).LoggedIn
 	header.Admin = theSession.(Session).Admin
 
 	ctx.ViewData("Header", header)
@@ -210,7 +225,7 @@ func showUser(ctx iris.Context) {
 		return
 	}
 
-	details.Id = userNum
+	details.ID = userNum
 	details.First = crypto.Decrypt(theUser.First)
 	details.Surname = crypto.Decrypt(theUser.Surname)
 	details.Position = theUser.Position
@@ -226,11 +241,96 @@ func showUser(ctx iris.Context) {
 	details.Name = strings.TrimSpace(details.First + " " + details.Surname)
 
 	header.Title = "User " + details.Name
+	header.Loggedin = theSession.(Session).LoggedIn
 	header.Admin = theSession.(Session).Admin
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
 	ctx.View("usershow.html")
+}
+
+func activateUser(ctx iris.Context) {
+	var (
+		theUser      db.User
+		header       types.HeaderRecord
+		details      activateRec
+		errorMessage string
+		ok           bool
+		err          error
+	)
+
+	theCode := ctx.Params().Get("code")
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+
+	usersCollection := session.DB(db.MainDB).C(db.CollectionUsers)
+
+	theTemplate := "activatecode.html"
+	switch ctx.Method() {
+	case http.MethodGet:
+		if len(theCode) != 0 {
+			err = usersCollection.Find(bson.M{db.KFieldUserActivateCode: theCode}).One(&theUser)
+			if err == nil {
+				theTemplate = "activate.html"
+				details.Code = theCode
+				details.ID = theUser.ID
+			}
+		}
+
+	case http.MethodPost:
+		err = decoder.Decode(&details, ctx.FormValues())
+		if err != nil {
+			log.Println("Error: decode user activate", err)
+		}
+
+		err = usersCollection.Find(bson.M{db.KFieldUserActivateCode: details.Code}).One(&theUser)
+		if err != nil {
+			errorMessage = "The code and user name do not match"
+			break
+		}
+		if theUser.Username != details.Username {
+			errorMessage = "The code and user name do not match"
+			break
+		}
+
+		ok, err = CheckPassword(details.Password1, details.Password2)
+		if err == nil {
+			if ok {
+				theSalt := crypto.RandomChars(20)
+				sets := bson.M{}
+				unSets := bson.M{}
+				sets[db.KFieldUserInactive] = false
+				sets[db.KFieldUserSalt] = theSalt
+				sets[db.KFieldUserPassword], err = crypto.GetHash(details.Password1, theSalt)
+
+				unSets[db.KFieldUserActivateCode] = 1
+				unSets[db.KFieldUserActivateTime] = 1
+
+				err = usersCollection.UpdateId(theUser.ID, bson.M{"$set": sets, "$unset": unSets})
+				if err != nil {
+					log.Println("Error: users activate update", err)
+				}
+
+				ctx.Redirect("/login", http.StatusFound)
+				return
+			}
+		} else {
+			errorMessage = err.Error()
+		}
+		if len(theCode) > 0 {
+			theTemplate = "activate.html"
+		}
+	}
+
+	header.Title = "RF: Activate"
+	header.Loggedin = false
+	header.Scripts = append(header.Scripts, "passwordtoggle")
+
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+	ctx.ViewData("ErrorMessage", errorMessage)
+	ctx.View(theTemplate)
 }
 
 func (er editRec) save() {
@@ -242,7 +342,7 @@ func (er editRec) save() {
 	defer session.Close()
 
 	usersCollection := session.DB(db.MainDB).C(db.CollectionUsers)
-	err := usersCollection.FindId(er.Id).One(&theUser)
+	err := usersCollection.FindId(er.ID).One(&theUser)
 
 	sets := bson.M{}
 
@@ -294,11 +394,105 @@ func (er editRec) save() {
 		return
 	}
 
-	err = usersCollection.UpdateId(er.Id, bson.M{"$set": sets})
+	err = usersCollection.UpdateId(er.ID, bson.M{"$set": sets})
 	if err != nil {
 		log.Println("Error: update user", err)
 	}
 	// KFieldUserBased = "based"
 	// KFieldUserArea = "area"
 
+}
+
+func CheckPassword(password, password2 string) (bool, error) {
+	if password != password2 {
+		return false, errPassMismatch
+	}
+
+	if utils.ValidateEmail(password) {
+		return false, errEMailUsed
+	}
+
+	if !checkPasswordLen(password) {
+		return false, errPassShort
+	}
+	return CheckPasswordSafe(password)
+}
+
+func CheckPasswordSafe(password string) (bool, error) {
+	var (
+		resp *http.Response
+	)
+	h := sha1.New()
+	io.WriteString(h, password)
+	theStr := fmt.Sprintf("%X", h.Sum(nil))
+
+	theUrl := "https://api.pwnedpasswords.com/range/" + theStr[:5]
+	client := &http.Client{}
+	r, err := http.NewRequest(http.MethodGet, theUrl, nil)
+	if err != nil {
+		log.Println("NewRequest Error:", err)
+		return false, err
+	}
+
+	for i := 0; i < 3; i++ {
+		resp, err = client.Do(r)
+		if err == nil {
+			break
+		}
+		i++
+	}
+	if err != nil {
+		log.Println("Error: Pass check client", err)
+		return false, err
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	if strings.Contains(string(body), theStr[5:]) {
+		return false, errPassUsed
+	}
+
+	return true, nil
+}
+
+func checkPasswordLen(password string) bool {
+	var (
+		ascii   int
+		unicode int
+	)
+	for _, ch := range password {
+		if int(ch) > 255 {
+			unicode++
+		} else {
+			ascii++
+		}
+	}
+	if unicode >= 6 {
+		return true
+	}
+	if ascii >= 10 {
+		return true
+	}
+	switch unicode {
+	case 1:
+		if ascii >= 8 {
+			return true
+		}
+	case 2:
+		if ascii >= 6 {
+			return true
+		}
+	case 3:
+		if ascii >= 4 {
+			return true
+		}
+	case 4:
+		if ascii >= 3 {
+			return true
+		}
+	case 5:
+		if ascii >= 2 {
+			return true
+		}
+	}
+	return false
 }

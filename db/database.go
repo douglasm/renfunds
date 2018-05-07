@@ -4,8 +4,8 @@ import (
 	// "fmt"
 	"time"
 
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 )
 
 const (
@@ -86,31 +86,37 @@ const (
 )
 
 const (
-	KFieldUserAdmin    = "admin_access"
-	KFieldUserInactive = "inactive"
-	KFieldUserPosition = "position"
-	KFieldUserFirst    = "first"
-	KFieldUserSurname  = "surname"
-	KFieldUserAddress  = "address"
-	KFieldUserPostCode = "postcode"
-	KFieldUserEMail    = "email"
-	KFieldUserPhone    = "telephone"
-	KFieldUserMobile   = "mobile"
-	KFieldUserBased    = "based"
-	KFieldUserArea     = "area"
+	KFieldUserAdmin        = "admin_access"
+	KFieldUserInactive     = "inactive"
+	KFieldUserPosition     = "position"
+	KFieldUserFirst        = "first"
+	KFieldUserSurname      = "surname"
+	KFieldUserAddress      = "address"
+	KFieldUserPostCode     = "postcode"
+	KFieldUserEMail        = "email"
+	KFieldUserPhone        = "telephone"
+	KFieldUserMobile       = "mobile"
+	KFieldUserBased        = "based"
+	KFieldUserArea         = "area"
+	KFieldUserResetCode    = "resetcode"
+	KFieldUserResetTime    = "resettime"
+	KFieldUserActivateCode = "activate"
+	KFieldUserActivateTime = "activatetime"
+	KFieldUserPassword     = "password"
+	KFieldUserSalt         = "salt"
 )
 
 type (
 	Counter struct {
-		Id    string `bson:"_id"`
+		ID    string `bson:"_id"`
 		Value int    `bson:"value"`
 	}
 
 	Annuity struct {
-		Id            int       `bson:"_id"`
+		ID            int       `bson:"_id"`
 		ClientNum     int       `bson:"clientnum"`
 		CaseNumber    string    `bson:"case,omitempty"`
-		CMSId         string    `bson:"cms,omitempty"`
+		CMSID         string    `bson:"cms,omitempty"`
 		Comments      []Comment `bson:"comments,omitempty"`
 		Amount        int       `bson:"amount,omitempty"`
 		Organisation  string    `bson:"organisation,omitempty"`
@@ -122,10 +128,10 @@ type (
 	}
 
 	Case struct {
-		Id            int       `bson:"_id"`
+		ID            int       `bson:"_id"`
 		ClientNum     int       `bson:"clientnum"`
 		CaseNumber    string    `bson:"case,omitempty"`
-		CMSId         string    `bson:"cms,omitempty"`
+		CMSID         string    `bson:"cms,omitempty"`
 		VisitNumber   string    `bson:"visit,omitempty"`
 		Annuity       bool      `bson:"annuity,omitempty"`
 		Comments      []Comment `bson:"comments,omitempty"`
@@ -141,7 +147,7 @@ type (
 	}
 
 	Client struct {
-		Id          int       `bson:"_id"`
+		ID          int       `bson:"_id"`
 		DOB         int       `bson:"dob,omitempty"`
 		Title       string    `bson:"title,omitempty"`
 		First       string    `bson:"first,omitempty"`
@@ -157,6 +163,7 @@ type (
 		Unit        string    `bson:"services,omitempty"`
 		Annuity     bool      `bson:"annuity,omitempty"`
 		Comments    []Comment `bson:"comments,omitempty"`
+		OldComments []Comment `bson:"oldcomm,omitempty"`
 		UserIssuing int       `bson:"usernum,omitempty"`
 		Based       string    `bson:"based,omitempty"`
 		Order       int       `bson:"order"`
@@ -165,7 +172,7 @@ type (
 	}
 
 	Collection struct {
-		Id            int     `bson:"_id"`
+		ID            int     `bson:"_id"`
 		Can           bool    `bson:"can,omitempty"`
 		CanNumber     int     `bson:"can_number"`
 		Establishment string  `bson:"establishment,omitempty"`
@@ -186,7 +193,7 @@ type (
 	}
 
 	Establishment struct {
-		Id            int    `bson:"_id"`
+		ID            int    `bson:"_id"`
 		Establishment string `bson:"establishment,omitempty"`
 		Address       string `bson:"address,omitempty"`
 		PostCode      string `bson:"postcode,omitempty"`
@@ -197,7 +204,7 @@ type (
 	}
 
 	EstateAgent struct {
-		Id       int    `bson:"_id"`
+		ID       int    `bson:"_id"`
 		Property string `bson:"property"`
 		Address  string `bson:"name_and_address"`
 		Title    string `bson:"title,omitempty"`
@@ -210,7 +217,7 @@ type (
 	}
 
 	Fund struct {
-		Id           int    `json:"_id"`                     // `id` smallint(3) unsigned zerofill NOT NULL AUTO_INCREMENT,
+		ID           int    `json:"_id"`                     // `id` smallint(3) unsigned zerofill NOT NULL AUTO_INCREMENT,
 		Source       string `json:"source,omitempty"`        // `source` varchar(255) NOT NULL DEFAULT '',
 		Address      string `json:"address,omitempty"`       // `address1` varchar(255) NOT NULL DEFAULT '',
 		Country      string `json:"country,omitempty"`       // `country` varchar(255) NOT NULL DEFAULT '',
@@ -236,9 +243,9 @@ type (
 	}
 
 	People struct {
-		Id          int       `bson:"_id"`
+		ID          int       `bson:"_id"`
 		CaseNumber  string    `bson:"case,omitempty"`
-		CMSId       string    `bson:"cms,omitempty"`
+		CMSID       string    `bson:"cms,omitempty"`
 		VisitNumber string    `bson:"visit,omitempty"`
 		DOB         int       `bson:"dob,omitempty"`
 		Title       string    `bson:"title,omitempty"`
@@ -269,47 +276,54 @@ type (
 	}
 
 	User struct {
-		Id       int    `bson:"_id"`
-		Area     string `bson:"area,omitempty"`
-		Admin    bool   `bson:"admin_access,omitempty"`
-		Title    string `bson:"title,omitempty"`
-		First    string `bson:"first,omitempty"`
-		Surname  string `bson:"surname,omitempty"`
-		Name     string `bson:"name,omitempty"`
-		Letters  string `bson:"letters,omitempty"`
-		Position string `bson:"position,omitempty"`
-		Username string `bson:"username,omitempty"`
-		Password []byte `bson:"password"`
-		Salt     string `bson:"salt"`
-		Address  string `bson:"address,omitempty"`
-		PostCode string `bson:"postcode,omitempty"`
-		Phone    string `bson:"telephone,omitempty"`
-		Mobile   string `bson:"mobile,omitempty"`
-		EMail    string `bson:"email,omitempty"`
-		Based    string `bson:"based,omitempty"`
-		InActive bool   `bson:"inactive"`
-		Comments string `bson:"comments,omitempty"`
+		ID           int    `bson:"_id"`
+		Area         string `bson:"area,omitempty"`
+		Admin        bool   `bson:"admin_access,omitempty"`
+		Title        string `bson:"title,omitempty"`
+		First        string `bson:"first,omitempty"`
+		Surname      string `bson:"surname,omitempty"`
+		Name         string `bson:"name,omitempty"`
+		Letters      string `bson:"letters,omitempty"`
+		Position     string `bson:"position,omitempty"`
+		Username     string `bson:"username,omitempty"`
+		Password     []byte `bson:"password"`
+		Salt         string `bson:"salt"`
+		Address      string `bson:"address,omitempty"`
+		PostCode     string `bson:"postcode,omitempty"`
+		Phone        string `bson:"telephone,omitempty"`
+		Mobile       string `bson:"mobile,omitempty"`
+		EMail        string `bson:"email,omitempty"`
+		Based        string `bson:"based,omitempty"`
+		ResetCode    string `bson:"resetcode,omitempty"`
+		ResetTime    int64  `bson:"resettime,omitempty"`
+		ActivateCode string `bson:"activate,omitempty"`
+		ActivateTime int64  `bson:"activatetime,omitempty"`
+		InActive     bool   `bson:"inactive"`
+		Comments     string `bson:"comments,omitempty"`
 	}
 
 	Voucher struct {
-		Id              int     `bson:"_id"`
-		Closed          bool    `bson:"closed,omitempty"`
-		Title           string  `bson:"title,omitempty"`
-		First           string  `bson:"first,omitempty"`
-		Surname         string  `bson:"surname,omitempty"`
-		CaseNumber      string  `bson:"casenumber,omitempty"`
-		Amount          float64 `bson:"amount,omitempty"`
-		Establishment   string  `bson:"establishment,omitempty"`
-		DateIssued      int     `bson:"date_issued,omitempty"`
-		UserIssuing     int     `bson:"usernum,omitempty"`
-		IssuedFirst     string  `bson:"issued_by_first,omitempty"`
-		IssuedSurname   string  `bson:"issued_by_surname,omitempty"`
-		InvoiceReceived int     `bson:"invoice_received,omitempty"`
-		AmountRemaining float64 `bson:"amount_remaining,omitempty"`
+		ID              int    `bson:"_id"`
+		Closed          bool   `bson:"closed,omitempty"`
+		CaseID          int    `bson:"case,omitempty"`
+		Amount          int    `bson:"amount,omitempty"`
+		Establishment   string `bson:"establishment,omitempty"`
+		DateIssued      int    `bson:"date_issued,omitempty"`
+		UserIssuing     int    `bson:"usernum,omitempty"`
+		InvoiceReceived bool   `bson:"invoice_received,omitempty"`
+		AmountRemaining int    `bson:"amount_remaining,omitempty"`
+	}
+
+	Proof struct {
+		ID     int    `bson:"_id"`
+		Closed bool   `bson:"closed,omitempty"`
+		CaseID int    `bson:"case,omitempty"`
+		Name   string `bson:"name,omitempty"`
+		Date   int    `bson:"date,omitempty"`
 	}
 
 	Resource struct {
-		Id           int    `bson:"_id"`                     // `id` smallint(3) unsigned zerofill NOT NULL AUTO_INCREMENT,
+		ID           int    `bson:"_id"`                     // `id` smallint(3) unsigned zerofill NOT NULL AUTO_INCREMENT,
 		Resource     string `bson:"resource,omitempty"`      // `resource` varchar(255) NOT NULL DEFAULT '',
 		Address      string `bson:"address,omitempty"`       // `address1` varchar(255) NOT NULL DEFAULT '',
 		Postcode     string `bson:"postcode,omitempty"`      // `postcode` varchar(255) NOT NULL DEFAULT '',
@@ -327,7 +341,7 @@ type (
 	}
 
 	Service struct {
-		Id              int     `bson:"_id"`                     // `id` smallint(4) unsigned zerofill NOT NULL AUTO_INCREMENT,
+		ID              int     `bson:"_id"`                     // `id` smallint(4) unsigned zerofill NOT NULL AUTO_INCREMENT,
 		Closed          bool    `bson:"closed,omitempty"`        // `closed` enum('C','O') NOT NULL DEFAULT 'O',
 		Title           string  `bson:"title,omitempty"`         // `title` varchar(255) NOT NULL DEFAULT '',
 		First           string  `bson:"first,omitempty"`         // `firstname` varchar(255) NOT NULL DEFAULT '',
@@ -363,7 +377,7 @@ func GetNextSequence(name string) int {
 
 	_, err = countersCollection.FindId(name).Apply(change, &theCounter)
 	if err != nil {
-		theCounter.Id = name
+		theCounter.ID = name
 		theCounter.Value = 1
 		countersCollection.Insert(theCounter)
 		return theCounter.Value

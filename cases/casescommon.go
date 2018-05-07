@@ -10,8 +10,8 @@ import (
 
 	"github.com/gorilla/schema"
 	"github.com/kataras/iris"
-	// "gopkg.in/mgo.v2"
-	// "gopkg.in/mgo.v2/bson"
+	// "github.com/globalsign/mgo"
+	// "github.com/globalsign/mgo/bson"
 
 	"ssafa/crypto"
 	"ssafa/db"
@@ -21,9 +21,9 @@ import (
 
 type (
 	CaseList struct {
-		Id         int
+		ID         int
 		Name       string
-		ClientId   int
+		ClientID   int
 		CaseNumber string
 		CMSNumber  string
 		CaseWorker string
@@ -33,10 +33,10 @@ type (
 	}
 
 	CaseRec struct {
-		Id          int         `bson:"_id"`
+		ID          int         `bson:"_id"`
 		ClientNum   int         `bson:"clientnum"`
 		CaseNumber  string      `bson:"case,omitempty"`
-		CMSId       string      `bson:"cms,omitempty"`
+		CMSID       string      `bson:"cms,omitempty"`
 		CaseFirst   string      `bson:"casefirst,omitempty"`
 		CaseSurname string      `bson:"casesurn,omitempty"`
 		Closed      bool        `bson:"closed"`
@@ -56,7 +56,7 @@ type (
 	}
 
 	CommentRec struct {
-		Id      int    `schema:"id"`
+		ID      int    `schema:"id"`
 		Comment string `schema:"comment"`
 		Commit  string `schema:"commit"`
 	}
@@ -68,6 +68,7 @@ var (
 
 	ErrorDateCaseUsed = errors.New("That case number is used elsewhere")
 	ErrorDateCMSUsed  = errors.New("That CMS number is used elsewhere")
+	errorCMSMissing   = errors.New("You must enter a CMS number.")
 )
 
 func SetKey(theKey []byte) {
@@ -95,6 +96,8 @@ func SetRoutes(app *iris.Application) {
 
 	app.Get("/casedelete/{casenum:int}", deleteCase)
 	app.Get("/caseremove/{casenum:int}", removeCase)
+
+	app.Post("/searchcase", searchCase)
 
 	app.Post("/commentcase/{casenum:int}", addComment)
 }
