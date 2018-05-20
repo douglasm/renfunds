@@ -1,0 +1,108 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <div class="row">
+            <div class="grid_9">
+                <h4>Renfunds voucher</h4>
+                <div class="row">
+                    <div class="grid_10">
+                        <div class="grid_2">
+                            <strong>Renfunds number:</strong>
+                        </div>
+                        <div class="grid_7">
+                            <a href="/case/{{.Details.CaseID}}">{{.Details.RENNumber}}</a>
+                        </div>
+                    </div>
+                </div> <!-- end of row -->
+                <div class="row">
+                    <div class="grid_10">
+                        <div class="grid_2">
+                            <strong>Client:</strong>
+                        </div>
+                        <div class="grid_7">
+                            <a href="/client/{{.Details.ClientID}}">{{.Details.Client}}</a>
+                        </div>
+                    </div>
+                </div> <!-- end of row -->
+                <div class="row">
+                    <div class="grid_10">
+                        <div class="grid_2">
+                            <strong>Case worker:</strong>
+                        </div>
+                        <div class="grid_7">
+                            {{.Details.CaseWorker}}
+                        </div>
+                    </div>
+                </div> <!-- end of row -->
+                <div class="row">
+                    <div class="grid_10">
+                        <div class="grid_2">
+                            <strong>Establishment:</strong>
+                        </div>
+                        <div class="grid_7">
+                            {{.Details.Establishment}}
+                        </div>
+                    </div>
+                </div> <!-- end of row -->
+                <div class="row">
+                    <div class="grid_10">
+                        <div class="grid_2">
+                            <strong>Amount:</strong>
+                        </div>
+                        <div class="grid_7">
+                            {{.Details.Amount}}
+                        </div>
+                    </div>
+                </div> <!-- end of row -->
+                <div class="row">
+                    <div class="grid_10">
+                        <div class="grid_2">
+                            <strong>Remaining:</strong>
+                        </div>
+                        <div class="grid_7">
+                            {{.Details.Remains}}
+                        </div>
+                    </div>
+                </div> <!-- end of row -->
+                <div class="row">
+                    <div class="grid_10">
+                        <div class="grid_2">
+                            <strong>Invoice:</strong>
+                        </div>
+                        <div class="grid_7">
+                            {{.Details.Invoice}}
+                        </div>
+                    </div>
+                </div> <!-- end of row -->
+                <div class="row">
+                    <div class="grid_10">
+                        <div class="grid_2">
+                            <strong>Date:</strong>
+                        </div>
+                        <div class="grid_7">
+                            {{.Details.Date}}
+                        </div>
+                    </div>
+                </div> <!-- end of row -->
+                <div class="row">
+                    <div class="grid_10">
+                        <div class="grid_2">
+                            <strong>Updated:</strong>
+                        </div>
+                        <div class="grid_7">
+                            {{.Details.Updated}}
+                        </div>
+                    </div>
+                </div> <!-- end of row -->
+            </div> <!-- end of grid_9 -->
+        </div> <!-- end of row -->
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>

@@ -19,6 +19,7 @@ import (
 	"ssafa/db"
 	"ssafa/types"
 	"ssafa/users"
+	"ssafa/utils"
 )
 
 type (
@@ -47,6 +48,7 @@ type (
 		PostCode   string
 		Comments   []cases.CommentDisplay
 		Cases      []cases.CaseList
+		Vouchers   []voucherDisplay
 	}
 
 	ClientEdit struct {
@@ -74,6 +76,14 @@ type (
 		Comment string `schema:"comment"`
 		Num     int    `schema:"num"`
 		Commit  string `schema:"commit"`
+	}
+
+	voucherDisplay struct {
+		ID            int
+		RENNumber     string
+		Amount        string
+		Establishment string
+		Remaining     string
 	}
 )
 
@@ -235,8 +245,9 @@ func showClient(ctx iris.Context) {
 		theClient db.Client
 		header    types.HeaderRecord
 		// theUser      db.User
-		clientNum int
-		err       error
+		theVouchers []voucherDisplay
+		clientNum   int
+		err         error
 	)
 
 	clientNum, err = ctx.Params().GetInt("clientnum")
@@ -286,10 +297,12 @@ func showClient(ctx iris.Context) {
 	details.Comments = getComments(theClient.Comments, details.ID)
 
 	allCases := getCases(theClient.ID)
+	theVouchers = getVouchers(theClient.ID)
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
 	ctx.ViewData("Cases", allCases)
+	ctx.ViewData("Vouchers", theVouchers)
 	ctx.View("client.html")
 }
 
@@ -900,10 +913,10 @@ func getCases(clientNum int) []cases.CaseList {
 	iter := caseColl.Find(bson.M{db.KFieldCaseClientNum: clientNum}).Sort(db.KFieldCaseClosed, db.KFieldCaseUpdated).Iter()
 	for iter.Next(&theCase) {
 		newCase := cases.CaseList{ID: theCase.ID}
-		if len(theCase.CaseNumber) > 0 {
-			newCase.CaseNumber = theCase.CaseNumber
+		if len(theCase.RENNumber) > 0 {
+			newCase.RENNumber = theCase.RENNumber
 		} else {
-			newCase.CaseNumber = "None"
+			newCase.RENNumber = "None"
 		}
 		newCase.CMSNumber = theCase.CMSID
 		if theCase.CaseWorkerNum == 0 {
@@ -924,6 +937,39 @@ func getCases(clientNum int) []cases.CaseList {
 	}
 	iter.Close()
 	return allCases
+}
+
+func getVouchers(clientNum int) []voucherDisplay {
+	var (
+		allVouchers []voucherDisplay
+		theVoucher  db.Voucher
+		theCase     db.Case
+		// theUser     db.User
+	)
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	voucherColl := session.DB(db.MainDB).C(db.CollectionVouchers)
+	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+
+	iter := voucherColl.Find(bson.M{db.KFieldVoucherClient: clientNum}).Sort(db.KFieldVoucherClosed, db.KFieldVoucherDate).Iter()
+	for iter.Next(&theVoucher) {
+		caseColl.FindId(theVoucher.CaseID).One(&theCase)
+		newVoucher := voucherDisplay{}
+		if len(theCase.RENNumber) > 0 {
+			newVoucher.RENNumber = theCase.RENNumber
+		} else {
+			newVoucher.RENNumber = "None"
+		}
+		newVoucher.ID = theVoucher.ID
+		newVoucher.Establishment = theVoucher.Establishment
+		newVoucher.Amount = "£" + utils.IntToString(theVoucher.Amount, 2)
+		newVoucher.Remaining = "£" + utils.IntToString(theVoucher.Remaining, 2)
+
+		allVouchers = append(allVouchers, newVoucher)
+	}
+	iter.Close()
+	return allVouchers
 }
 
 // db.clients.update({"_id": 1375}, { $push: { comments: { $each: [ {date: 2018067, name: "Fred Smith"} ], $position: 0 } }})

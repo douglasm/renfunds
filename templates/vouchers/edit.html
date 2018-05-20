@@ -1,0 +1,98 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h4>Edit voucher</h4>
+        {{template "error_display.html" .}}
+        <form class="inputform" action="/vouchereditcase/{{.Details.ID}}" method="post">
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Client:</strong>
+                    </div>
+                    <div class="grid_7">
+                        {{.Details.Name}}
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Case number:</strong>
+                    </div>
+                    <div class="grid_7">
+                        {{.Details.RENNumber}}
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Date:</strong>
+                    </div>
+                    <div class="grid_7">
+                        {{.Details.Date}}
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Amount:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" pattern="\d+(\.\d{2})?" name="amount" value="{{.Details.Amount}}" size="10" autofocus required>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Establishment:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="establish" value="{{.Details.Establishment}}" size="40" required>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Remaining:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="remain" value="{{.Details.Remain}}" size="40" required>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Invoice received:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="radio" name="invoice" value="1" {{if .Details.Invoice}}checked{{end}}>Yes
+                        <input type="radio" name="invoice" value="0" {{if .Details.Invoice}}{{else}}checked{{end}}>No
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <input type="hidden" name="id" value="{{.Details.ID}}">
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        &nbsp;
+                    </div>
+                    <div class="grid_7">
+                        <input name="commit" type="submit" value="Save">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+        </form>
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+</body>
+</html>

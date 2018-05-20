@@ -24,7 +24,7 @@ type (
 		ID         int
 		Name       string
 		ClientID   int
-		CaseNumber string
+		RENNumber  string
 		CMSNumber  string
 		CaseWorker string
 		Opened     string
@@ -35,7 +35,7 @@ type (
 	CaseRec struct {
 		ID          int         `bson:"_id"`
 		ClientNum   int         `bson:"clientnum"`
-		CaseNumber  string      `bson:"case,omitempty"`
+		RENNumber   string      `bson:"case,omitempty"`
 		CMSID       string      `bson:"cms,omitempty"`
 		CaseFirst   string      `bson:"casefirst,omitempty"`
 		CaseSurname string      `bson:"casesurn,omitempty"`

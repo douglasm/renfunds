@@ -29,35 +29,65 @@
         <div class="row">
             <div class="grid_8">
                 <hr>
-        {{if .Cases}}
-        <table>
-            <thead>
-                <th>Case number</th>
-                <th>CMS number</th>
-                <th>Case Worker</th>
-                <th>State</th>
-            </thead>
-            <tbody>
-                {{range $element := .Cases}}
-                    <tr>
-                        <td align="left"><a href="/case/{{$element.ID}}">{{$element.CaseNumber}}</a></td>
-                        <td align="left">{{$element.CMSNumber}}</td>
-                        <td align="left">{{$element.CaseWorker}}</td>
-                        <td align="left">{{$element.State}}</td>
-                    </tr>
+                {{if .Cases}}
+                <table>
+                    <thead>
+                        <th>Case number</th>
+                        <th>CMS number</th>
+                        <th>Case Worker</th>
+                        <th>State</th>
+                    </thead>
+                    <tbody>
+                        {{range $element := .Cases}}
+                            <tr>
+                                <td align="left"><a href="/case/{{$element.ID}}">{{$element.RENNumber}}</a></td>
+                                <td align="left">{{$element.CMSNumber}}</td>
+                                <td align="left">{{$element.CaseWorker}}</td>
+                                <td align="left">{{$element.State}}</td>
+                            </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                {{else}}
+                    <p>
+                        No cases
+                        <div class="button-group">
+                            <a href="/caseadd/{{.Details.ID}}" class="button">Add</a>
+                        </div>
+                    </p>
                 {{end}}
-            </tbody>
-        </table>
-        {{else}}
-            <p>
-                No cases
-                <div class="button-group">
-                    <a href="/caseadd/{{.Details.ID}}" class="button">Add</a>
-                </div>
-            </p>
-        {{end}}
             </div>
-        </div>
+        </div>  <!-- end of row -->
+        <div class="row">
+            <div class="grid_8">
+                <hr>
+                {{if .Vouchers}}
+                <h5>Vouchers</h5>
+                <table>
+                    <thead>
+                        <th>Case number</th>
+                        <th>Establishment</th>
+                        <th>Amount</th>
+                        <th>Remaining</th>
+                    </thead>
+                    <tbody>
+                        {{range $element := .Cases}}
+                            <tr>
+                                <td align="left"><a href="/case/{{$element.ID}}">{{$element.RENNumber}}</a></td>
+                                <td align="left">{{$element.CMSNumber}}</td>
+                                <td align="left">{{$element.CaseWorker}}</td>
+                                <td align="left">{{$element.State}}</td>
+                            </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                {{else}}
+                    <p>
+                        No Vouchers
+                    </p>
+                {{end}}
+            </div>
+        </div>  <!-- end of row -->
         <table>
             <thead>
                 <th>Date</th>

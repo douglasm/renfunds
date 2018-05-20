@@ -106,6 +106,19 @@ const (
 	KFieldUserSalt         = "salt"
 )
 
+const (
+	KFieldVoucherAmount          = "amount"
+	KFieldVoucherCase            = "case"
+	KFieldVoucherClient          = "client"
+	KFieldVoucherClosed          = "closed"
+	KFieldVoucherEstablishment   = "establishment"
+	KFieldVoucherDate            = "date"
+	KFieldVoucherUpdated         = "update"
+	KFieldVoucherUserIssuing     = "usernum"
+	KFieldVoucherInvoiceReceived = "invoice"
+	KFieldVoucherRemains         = "remaining"
+)
+
 type (
 	Counter struct {
 		ID    string `bson:"_id"`
@@ -115,7 +128,7 @@ type (
 	Annuity struct {
 		ID            int       `bson:"_id"`
 		ClientNum     int       `bson:"clientnum"`
-		CaseNumber    string    `bson:"case,omitempty"`
+		RENNumber     string    `bson:"case,omitempty"`
 		CMSID         string    `bson:"cms,omitempty"`
 		Comments      []Comment `bson:"comments,omitempty"`
 		Amount        int       `bson:"amount,omitempty"`
@@ -130,7 +143,7 @@ type (
 	Case struct {
 		ID            int       `bson:"_id"`
 		ClientNum     int       `bson:"clientnum"`
-		CaseNumber    string    `bson:"case,omitempty"`
+		RENNumber     string    `bson:"case,omitempty"`
 		CMSID         string    `bson:"cms,omitempty"`
 		VisitNumber   string    `bson:"visit,omitempty"`
 		Annuity       bool      `bson:"annuity,omitempty"`
@@ -244,7 +257,7 @@ type (
 
 	People struct {
 		ID          int       `bson:"_id"`
-		CaseNumber  string    `bson:"case,omitempty"`
+		RENNumber   string    `bson:"case,omitempty"`
 		CMSID       string    `bson:"cms,omitempty"`
 		VisitNumber string    `bson:"visit,omitempty"`
 		DOB         int       `bson:"dob,omitempty"`
@@ -305,21 +318,24 @@ type (
 	Voucher struct {
 		ID              int    `bson:"_id"`
 		Closed          bool   `bson:"closed,omitempty"`
+		ClientID        int    `bson:"client,omitempty"`
 		CaseID          int    `bson:"case,omitempty"`
 		Amount          int    `bson:"amount,omitempty"`
 		Establishment   string `bson:"establishment,omitempty"`
-		DateIssued      int    `bson:"date_issued,omitempty"`
+		Issued          int64  `bson:"date,omitempty"`
+		Updated         int64  `bson:"update,omitempty"`
 		UserIssuing     int    `bson:"usernum,omitempty"`
-		InvoiceReceived bool   `bson:"invoice_received,omitempty"`
-		AmountRemaining int    `bson:"amount_remaining,omitempty"`
+		InvoiceReceived bool   `bson:"invoice,omitempty"`
+		Remaining       int    `bson:"remaining,omitempty"`
 	}
 
 	Proof struct {
-		ID     int    `bson:"_id"`
-		Closed bool   `bson:"closed,omitempty"`
-		CaseID int    `bson:"case,omitempty"`
-		Name   string `bson:"name,omitempty"`
-		Date   int    `bson:"date,omitempty"`
+		ID       int    `bson:"_id"`
+		Closed   bool   `bson:"closed,omitempty"`
+		CaseID   int    `bson:"case,omitempty"`
+		ClientID int    `bson:"client,omitempty"`
+		Name     string `bson:"name,omitempty"`
+		Date     int    `bson:"date,omitempty"`
 	}
 
 	Resource struct {
@@ -346,7 +362,7 @@ type (
 		Title           string  `bson:"title,omitempty"`         // `title` varchar(255) NOT NULL DEFAULT '',
 		First           string  `bson:"first,omitempty"`         // `firstname` varchar(255) NOT NULL DEFAULT '',
 		Surname         string  `bson:"surname,omitempty"`       // `surname` varchar(255) NOT NULL DEFAULT '',
-		CaseNumber      string  `bson:"case_number,omitempty"`   // `case_number` varchar(255) NOT NULL DEFAULT '',
+		RENNumber       string  `bson:"case_number,omitempty"`   // `case_number` varchar(255) NOT NULL DEFAULT '',
 		Amount          float64 `bson:"amount,omitempty"`        // `amount` double(12,2) NOT NULL DEFAULT '0.00',
 		Establishment   string  `bson:"establishment,omitempty"` // `establishment` varchar(255) NOT NULL DEFAULT '',
 		DateIssued      int     `bson:"date_issued,omitempty"`   // `date_issued` date NOT NULL DEFAULT '0000-00-00',

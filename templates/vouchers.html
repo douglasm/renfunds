@@ -1,0 +1,54 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <div class="row">
+            <div class="grid_9">
+                <h4>Renfunds Vouchers</h4>
+                {{if .NavButtons.HasNav}}
+                    {{template "navbuttons.html" .NavButtons}}
+                {{end}}
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-class="expand">
+                                Surname
+                            </th>
+                            <th>
+                                First Name
+                            </th>
+                            <th>
+                                <div class="navbuttons">
+                                    DOB
+                                    {{if .Header.Admin}}
+                                        &nbsp;&nbsp;&nbsp;<a href="/editclient/0" class="button icon arrowleft">Add client</a>
+                                    {{end}}
+                                </div>
+
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range $element := .Details}}
+                            <tr>
+                                <td align="left"><a href="/client/{{$element.ID}}">{{$element.Surname}}</a></td>
+                                <td align="left"><a href="/client/{{$element.ID}}">{{$element.First}}</a></td>
+                                <td align="left"><a href="/client/{{$element.ID}}">{{$element.DOB}}</a></td>
+                            </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                {{if .NavButtons.HasNav}}
+                  {{template "navbuttons.html" .NavButtons}}
+                {{end}}
+            </div> <!-- end of grid_9 -->
+        </div> <!-- end of row -->
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>

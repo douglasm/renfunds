@@ -1,0 +1,67 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h4>Add voucher</h4>
+        {{template "error_display.html" .}}
+        <form class="inputform" action="/addvoucher/{{.Details.ID}}" method="post">
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Case number:</strong>
+                    </div>
+                    <div class="grid_7">
+                        {{.Details.RENNumber}}
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Client:</strong>
+                    </div>
+                    <div class="grid_7">
+                        {{.Details.Name}}
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Amount:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" pattern="\d+(\.\d{2})?" name="amount" value="{{.Details.Amount}}" size="10" autofocus required>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Establishment:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="establish" value="{{.Details.Establishment}}" size="40" required>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <input type="hidden" name="id" value="{{.Details.ID}}">
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        &nbsp;
+                    </div>
+                    <div class="grid_7">
+                        <input name="commit" type="submit" value="Add">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+        </form>
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+</body>
+</html>

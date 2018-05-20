@@ -9,14 +9,14 @@
             <!-- <div class="grid_9"> -->
                 <div class="row">
                     <div class="grid_2">
-                        <h5>{{.Details.CaseNumber}}</h5>
+                        <h5>{{.Details.RENNumber}}</h5>
                     </div>
-                    <div class="grid_2">
+                    <div class="grid_1">
                         <div class="button-group">
                             <a href="/caseedit/{{.Details.ID}}" class="button">Edit</a>
                         </div>
                     </div>
-                    <div class="grid_2">
+                    <div class="grid_1">
                     {{if .Header.Admin}}
                         <div class="button-group">
                             {{if .Details.Open}}
@@ -28,11 +28,20 @@
                     {{end}}
                     </div>
                     <div class="grid_2">
-                    {{if .Header.Admin}}
-                        <div class="button-group">
-                            <a href="/casedelete/{{.Details.ID}}" class="button">Delete</a>
-                        </div>
-                    {{end}}
+                        {{if .Header.Admin}}
+                            {{if .Details.Voucher}}
+                            <div class="button-group">
+                                <a href="/addvoucher/{{.Details.ID}}" class="button">Add voucher</a>
+                            </div>
+                            {{end}}
+                        {{end}}
+                    </div>
+                    <div class="grid_2">
+                        {{if .Header.Admin}}
+                            <div class="button-group">
+                                <a href="/casedelete/{{.Details.ID}}" class="button">Delete</a>
+                            </div>
+                        {{end}}
                     </div>
                 </div> <!-- end of row -->
                 {{template "rowitemlink.html" .Details.ClientName}}
@@ -41,12 +50,43 @@
                 {{template "rowitem.html" .Details.Opened}}
                 {{template "rowitem.html" .Details.Updated}}
                 {{template "rowitem.html" .Details.State}}
+                            <!-- <th>Remaining</th> -->
+                            <!-- <th>Invoice</th> -->
+                            <!-- <th>Updated</th> -->
+                                    <!-- <td>{ {$element.Remaining}}</td> -->
+                                    <!-- <td>{ {$element.Invoice}}</td> -->
+                                    <!-- <td>{ {$element.Updated}}</td> -->
+                {{if .Details.HasVoucher}}
+                    <hr />
+                    <h6><strong>Vouchers</strong></h6>
+                    <table>
+                        <thead>
+                            <th>Date</th>
+                            <th>Establishment</th>
+                            <th>Amount</th>
+                            <th>Remaining</th>
+                            <th>Invoice</th>
+                            <th>Updated</th>
+                        </thead>
+                        <tbody>
+                            {{range $element := .Details.VoucherList}}
+                                <tr>
+                                    <td><a href="/vouchereditcase/{{$element.ID}}">{{$element.Date}}</a></td>
+                                    <td><a href="/vouchereditcase/{{$element.ID}}">{{$element.Establishment}}</a></td>
+                                    <td><a href="/vouchereditcase/{{$element.ID}}">{{$element.Amount}}</a></td>
+                                    <td><a href="/vouchereditcase/{{$element.ID}}">{{$element.Remaining}}</a></td>
+                                    <td><a href="/vouchereditcase/{{$element.ID}}">{{$element.Invoice}}</a></td>
+                                    <td><a href="/vouchereditcase/{{$element.ID}}">{{$element.Updated}}</a></td>
+                                </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                {{end}}
                 <table>
                     <thead>
                         <th>Date</th>
                         <th>Comment</th>
                         <th>Case Worker</th>
-                        <th></th>
                     </thead>
                     <tbody>
                         <form action="/commentcase/{{.Details.ID}}" method="post">

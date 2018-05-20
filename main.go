@@ -22,6 +22,7 @@ import (
 	"ssafa/db"
 	"ssafa/types"
 	"ssafa/users"
+	"ssafa/vouchers"
 	// "ssafa/mail"
 )
 
@@ -165,6 +166,7 @@ func main() {
 	clients.SetRoutes(app)
 	cases.SetRoutes(app)
 	admin.SetRoutes(app)
+	vouchers.SetRoutes(app)
 
 	clients.OrderClients()
 

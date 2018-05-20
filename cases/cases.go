@@ -20,23 +20,26 @@ import (
 )
 
 type (
-	CaseDisplay struct {
-		ID         int
-		Open       bool
-		ClientName types.RowItem
-		CaseNumber string
-		CaseWorker types.RowItem
-		CMSNumber  types.RowItem
-		Opened     types.RowItem
-		State      types.RowItem
-		Updated    types.RowItem
-		ClientNum  int
-		Reports    []CommentDisplay
+	caseDisplay struct {
+		ID          int
+		Open        bool
+		Voucher     bool
+		ClientName  types.RowItem
+		RENNumber   string
+		CaseWorker  types.RowItem
+		CMSNumber   types.RowItem
+		Opened      types.RowItem
+		State       types.RowItem
+		Updated     types.RowItem
+		ClientNum   int
+		HasVoucher  bool
+		VoucherList []voucherItem
+		Reports     []CommentDisplay
 	}
 
-	CaseEdit struct {
+	caseEdit struct {
 		ID             int           `schema:"id"`
-		CaseNumber     string        `schema:"casenumber"`
+		RENNumber      string        `schema:"casenumber"`
 		CaseWorker     template.HTML `schema:"-"`
 		CaseWorkerName string        `schema:"cwname"`
 		CaseWorkerNum  int           `schema:"cwnum"`
@@ -46,16 +49,27 @@ type (
 		Checkfield     int           `schema:"checkfield"`
 		Commit         string        `schema:"commit"`
 	}
+
+	voucherItem struct {
+		ID            int
+		Date          string
+		Amount        string
+		Establishment string
+		Remaining     string
+		Invoice       string
+		Updated       string
+	}
 )
 
 func showCase(ctx iris.Context) {
 	var (
-		details   CaseDisplay
-		theCase   db.Case
-		theClient db.Client
-		header    types.HeaderRecord
-		caseNum   int
-		err       error
+		details    caseDisplay
+		theCase    db.Case
+		theClient  db.Client
+		theVoucher db.Voucher
+		header     types.HeaderRecord
+		caseNum    int
+		err        error
 	)
 
 	caseNum, err = ctx.Params().GetInt("casenum")
@@ -71,6 +85,7 @@ func showCase(ctx iris.Context) {
 
 	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
 	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+	voucherColl := session.DB(db.MainDB).C(db.CollectionVouchers)
 
 	err = caseColl.FindId(caseNum).One(&theCase)
 	if err != nil {
@@ -84,9 +99,9 @@ func showCase(ctx iris.Context) {
 	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 
-	header.Title = "RF: Case " + theCase.CaseNumber
+	header.Title = "RF: Case " + theCase.RENNumber
 
-	details.CaseNumber = theCase.CaseNumber
+	details.RENNumber = theCase.RENNumber
 
 	details.ClientName.Title = "Client"
 	tempStr := crypto.Decrypt(theClient.First) + " " + crypto.Decrypt(theClient.Surname)
@@ -114,8 +129,28 @@ func showCase(ctx iris.Context) {
 		details.State.Value = template.HTML("Yes " + utils.DateToString(theCase.DateClosed))
 	} else {
 		details.Open = true
+		details.Voucher = true
 		details.State.Value = template.HTML("No")
 	}
+
+	iter := voucherColl.Find(bson.M{db.KFieldVoucherCase: theCase.ID}).Iter()
+	for iter.Next(&theVoucher) {
+		details.HasVoucher = true
+		newVoucher := voucherItem{}
+		newVoucher.ID = theVoucher.ID
+		newVoucher.Date = utils.GetDateAndTime(theVoucher.Issued, false)
+		newVoucher.Amount = "£" + utils.IntToString(theVoucher.Amount, 2)
+		newVoucher.Establishment = theVoucher.Establishment
+		newVoucher.Remaining = "£" + utils.IntToString(theVoucher.Remaining, 2)
+		if theVoucher.InvoiceReceived {
+			newVoucher.Invoice = "Yes"
+		} else {
+			newVoucher.Invoice = "No"
+		}
+		newVoucher.Updated = utils.GetDateAndTime(theVoucher.Updated, false)
+		details.VoucherList = append(details.VoucherList, newVoucher)
+	}
+	iter.Close()
 
 	details.ClientNum = theClient.ID
 	for _, item := range theCase.Comments {
@@ -126,12 +161,12 @@ func showCase(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
-	ctx.View("case.html")
+	ctx.View("/cases/show.html")
 }
 
 func deleteCase(ctx iris.Context) {
 	var (
-		details   CaseDisplay
+		details   caseDisplay
 		theCase   db.Case
 		theClient db.Client
 		header    types.HeaderRecord
@@ -170,9 +205,9 @@ func deleteCase(ctx iris.Context) {
 
 	details.ID = caseNum
 
-	header.Title = "RF: Delete Case " + theCase.CaseNumber
+	header.Title = "RF: Delete Case " + theCase.RENNumber
 
-	details.CaseNumber = theCase.CaseNumber
+	details.RENNumber = theCase.RENNumber
 
 	details.ClientName.Title = "Client"
 	tempStr := crypto.Decrypt(theClient.First) + " " + crypto.Decrypt(theClient.Surname)
@@ -212,7 +247,7 @@ func deleteCase(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
-	ctx.View("casedelete.html")
+	ctx.View("cases/delete.html")
 }
 
 func removeCase(ctx iris.Context) {
@@ -274,7 +309,7 @@ func listCases(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
-	ctx.View("cases.html")
+	ctx.View("cases/list.html")
 }
 
 func openCases(ctx iris.Context) {
@@ -304,7 +339,7 @@ func openCases(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
-	ctx.View("casesopen.html")
+	ctx.View("cases/open.html")
 }
 
 func unassignedCases(ctx iris.Context) {
@@ -334,7 +369,7 @@ func unassignedCases(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
-	ctx.View("casesunassign.html")
+	ctx.View("cases/unassign.html")
 }
 
 func inactiveCases(ctx iris.Context) {
@@ -364,7 +399,7 @@ func inactiveCases(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
-	ctx.View("casesinactive.html")
+	ctx.View("cases/inactive.html")
 }
 
 func closeCase(ctx iris.Context) {
@@ -426,7 +461,7 @@ func addCase(ctx iris.Context) {
 func editCase(ctx iris.Context) {
 	var (
 		theCase      db.Case
-		details      CaseEdit
+		details      caseEdit
 		header       types.HeaderRecord
 		errorMessage string
 	)
@@ -450,7 +485,7 @@ func editCase(ctx iris.Context) {
 			log.Println("Error: editcase get", err)
 		}
 		details.ID = caseNum
-		details.CaseNumber = theCase.CaseNumber
+		details.RENNumber = theCase.RENNumber
 		details.CMSNumber = theCase.CMSID
 		details.ClientNum = theCase.ClientNum
 		details.ClientName = getClientName(theCase.ClientNum)
@@ -483,7 +518,7 @@ func editCase(ctx iris.Context) {
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
 	ctx.ViewData("ErrorMessage", errorMessage)
-	ctx.View("caseedit.html")
+	ctx.View("cases/edit.html")
 }
 
 func updateCase(theUpdate bson.M, caseId int) {
@@ -525,7 +560,7 @@ func searchCase(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
-	ctx.View("cases.html")
+	ctx.View("cases/list.html")
 }
 
 func addComment(ctx iris.Context) {
@@ -628,9 +663,9 @@ func GetCases(pageNum int, match, sort bson.M) ([]CaseList, bool) {
 			return allCases, true
 		}
 		// fmt.Println(result)
-		newCase := CaseList{ID: result.ID, CaseNumber: result.CaseNumber, CMSNumber: result.CMSID}
-		if len(newCase.CaseNumber) == 0 {
-			newCase.CaseNumber = "None"
+		newCase := CaseList{ID: result.ID, RENNumber: result.RENNumber, CMSNumber: result.CMSID}
+		if len(newCase.RENNumber) == 0 {
+			newCase.RENNumber = "None"
 		}
 		newCase.ClientID = result.Client[0].ID
 		newCase.Name = crypto.Decrypt(result.Client[0].First) + " " + crypto.Decrypt(result.Client[0].Surname)
@@ -660,7 +695,7 @@ func GetCases(pageNum int, match, sort bson.M) ([]CaseList, bool) {
 	return allCases, false
 }
 
-func (ce *CaseEdit) save() error {
+func (ce *caseEdit) save() error {
 	var (
 		theCase db.Case
 	)
@@ -671,10 +706,10 @@ func (ce *CaseEdit) save() error {
 	// KFieldCaseCMS        = "cms"
 
 	gotOne := false
-	ce.CaseNumber = strings.TrimSpace(ce.CaseNumber)
-	if len(ce.CaseNumber) > 0 {
-		ce.CaseNumber = strings.ToUpper(ce.CaseNumber)
-		iter := caseColl.Find(bson.M{db.KFieldCaseNum: ce.CaseNumber}).Iter()
+	ce.RENNumber = strings.TrimSpace(ce.RENNumber)
+	if len(ce.RENNumber) > 0 {
+		ce.RENNumber = strings.ToUpper(ce.RENNumber)
+		iter := caseColl.Find(bson.M{db.KFieldCaseNum: ce.RENNumber}).Iter()
 		for iter.Next(&theCase) {
 			if theCase.ID != ce.ID {
 				gotOne = true
@@ -690,7 +725,9 @@ func (ce *CaseEdit) save() error {
 
 	ce.CMSNumber = strings.TrimSpace(ce.CMSNumber)
 	if len(ce.CMSNumber) < 5 {
-		return errorCMSMissing
+		if ce.CaseWorkerNum != 0 {
+			return errorCMSMissing
+		}
 	}
 
 	iter := caseColl.Find(bson.M{db.KFieldCaseCMS: ce.CMSNumber}).Iter()
@@ -715,8 +752,8 @@ func (ce *CaseEdit) save() error {
 		sets[db.KFieldCaseCMS] = ce.CMSNumber
 	}
 
-	if ce.CaseNumber != theCase.CaseNumber {
-		sets[db.KFieldCaseNum] = ce.CaseNumber
+	if ce.RENNumber != theCase.RENNumber {
+		sets[db.KFieldCaseNum] = ce.RENNumber
 	}
 
 	if len(ce.CaseWorkerName) != 0 {
@@ -736,3 +773,6 @@ func (ce *CaseEdit) save() error {
 }
 
 // db.cases.aggregate([{$match: {"cwnum": {$ne: 0}}}, {$lookup: {from: "clients", localField: "clientnum", foreignField: "_id", as: "cd"}}])
+
+// export GIT_SSH_COMMAND='ssh -i identityfile ~/.ssh/id_agabb'
+// cat ~/.ssh/id_zotac.pub | pbcopy
