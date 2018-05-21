@@ -38,6 +38,7 @@ type (
 		Invoice       bool   `schema:"-"`
 		InvoiceVal    int    `schema:"invoice"`
 		CaseID        int    `schema:"caseid"`
+		Action        string `schema:"-"`
 		Commit        string `schema:"commit"`
 	}
 )
@@ -58,8 +59,8 @@ func SetRoutes(app *iris.Application) {
 	app.Post("/addvoucher/{casenum:int}", addVoucher)
 	app.Get("/vouchereditcase/{vouchernum:int}", editCaseVoucher)
 	app.Post("/vouchereditcase/{vouchernum:int}", editCaseVoucher)
-	//	app.Get("/voucheredit/{vouchernum:int}", editVoucher)
-	//	app.Post("/voucheredit/{vouchernum:int}", editVoucher)
+	app.Get("/voucheredit/{vouchernum:int}", voucherEdit)
+	app.Post("/voucheredit/{vouchernum:int}", voucherEdit)
 }
 
 func getClientName(clientNum int) string {

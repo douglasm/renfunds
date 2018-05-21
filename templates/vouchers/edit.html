@@ -7,7 +7,7 @@
     <div class="grid_12">
         <h4>Edit voucher</h4>
         {{template "error_display.html" .}}
-        <form class="inputform" action="/vouchereditcase/{{.Details.ID}}" method="post">
+        <form class="inputform" action="{{.Details.Action}}" method="post">
             <div class="row">
                 <div class="grid_10">
                     <div class="grid_2">
@@ -31,7 +31,7 @@
             <div class="row">
                 <div class="grid_10">
                     <div class="grid_2">
-                        <strong>Date:</strong>
+                        <strong>Issued:</strong>
                     </div>
                     <div class="grid_7">
                         {{.Details.Date}}

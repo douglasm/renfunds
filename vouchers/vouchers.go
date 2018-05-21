@@ -155,15 +155,6 @@ func showVoucher(ctx iris.Context) {
 		details.Invoice = "No"
 	}
 	details.Remains = "£" + utils.IntToString(theVoucher.Remaining, 2)
-	// ID              int    `bson:"_id"`
-	// Closed          bool   `bson:"closed,omitempty"`
-	// CaseID          int    `bson:"case,omitempty"`
-	// Amount          int    `bson:"amount,omitempty"`
-	// Establishment   string `bson:"establishment,omitempty"`
-	// DateIssued      int    `bson:"date_issued,omitempty"`
-	// UserIssuing     int    `bson:"usernum,omitempty"`
-	// InvoiceReceived bool   `bson:"invoice_received,omitempty"`
-	// AmountRemaining int    `bson:"amount_remaining,omitempty"`
 
 	header.Title = "RF: PV " + details.RENNumber
 
@@ -306,10 +297,86 @@ func editCaseVoucher(ctx iris.Context) {
 		}
 		errorMessage = err.Error()
 	}
+	details.Action = fmt.Sprintf("/vouchereditcase/%d", details.ID)
 
 	header.Loggedin = theSession.(users.Session).LoggedIn
 	header.Admin = theSession.(users.Session).Admin
 	header.Title = "RF: Add voucher"
+
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+	ctx.ViewData("ErrorMessage", errorMessage)
+	ctx.View("vouchers/edit.html")
+}
+
+func voucherEdit(ctx iris.Context) {
+	var (
+		header       types.HeaderRecord
+		details      editVoucher
+		theCase      db.Case
+		theVoucher   db.Voucher
+		errorMessage string
+		voucherNum   int
+		err          error
+	)
+
+	theSession := ctx.Values().Get("session")
+	if !theSession.(users.Session).LoggedIn {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+	if !theSession.(users.Session).Admin {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+	voucherNum, err = ctx.Params().GetInt("vouchernum")
+	if err != nil {
+		ctx.Redirect("/vouchers", http.StatusFound)
+		return
+	}
+
+	details.ID = voucherNum
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+
+	voucherColl := session.DB(db.MainDB).C(db.CollectionVouchers)
+	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+
+	voucherColl.FindId(voucherNum).One(&theVoucher)
+	caseColl.FindId(theVoucher.CaseID).One(&theCase)
+	details.CaseID = theVoucher.CaseID
+
+	details.Name = getClientName(theCase.ClientNum)
+	details.Date = utils.GetDateAndTime(theVoucher.Issued, false)
+
+	switch ctx.Method() {
+	case http.MethodGet:
+		details.Amount = utils.IntToString(theVoucher.Amount, 2)
+		details.Remain = utils.IntToString(theVoucher.Remaining, 2)
+		details.Establishment = theVoucher.Establishment
+		details.Invoice = theVoucher.InvoiceReceived
+
+	case http.MethodPost:
+		ctx.FormValues()
+		err = decoder.Decode(&details, ctx.FormValues())
+		if err != nil {
+			log.Println("Error: decode add voucher", err)
+		}
+		err = details.checkEdit()
+		if err == nil {
+			details.saveEdit(theSession.(users.Session).UserNumber, &theVoucher)
+			theURL := fmt.Sprintf("/voucher/%d", voucherNum)
+			ctx.Redirect(theURL, http.StatusFound)
+			return
+		}
+		errorMessage = err.Error()
+	}
+	details.Action = fmt.Sprintf("/voucheredit/%d", details.ID)
+
+	header.Loggedin = theSession.(users.Session).LoggedIn
+	header.Admin = theSession.(users.Session).Admin
+	header.Title = "RF: Edit voucher"
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)

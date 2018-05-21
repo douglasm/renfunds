@@ -81,7 +81,7 @@
                 <div class="row">
                     <div class="grid_10">
                         <div class="grid_2">
-                            <strong>Date:</strong>
+                            <strong>Issued:</strong>
                         </div>
                         <div class="grid_7">
                             {{.Details.Date}}
@@ -95,6 +95,16 @@
                         </div>
                         <div class="grid_7">
                             {{.Details.Updated}}
+                        </div>
+                    </div>
+                </div> <!-- end of row -->
+                <div class="row">
+                    <div class="grid_10">
+                        <div class="grid_2">
+                            &nbsp;
+                        </div>
+                        <div class="grid_7">
+                            <a href="/voucheredit/{{.Details.ID}}" class="button icon edit">Edit</a>
                         </div>
                     </div>
                 </div> <!-- end of row -->
