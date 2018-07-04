@@ -7,7 +7,12 @@
     <div class="grid_12">
         <div class="row">
             <div class="grid_9">
-                <h3>Renfunds Clients</h3>
+                <p><h4 class="hfloat">Renfunds Clients</h4>
+                    {{if .Header.Admin}}
+                        &nbsp;&nbsp;&nbsp;<a href="/editclient/0" class="button icon add">Add client</a>
+                    {{end}}
+                </p><br />
+
                 {{if .NavButtons.HasNav}}
                   {{template "navbuttons.html" .NavButtons}}
                 {{end}}
@@ -23,9 +28,6 @@
                             <th>
                                 <div class="navbuttons">
                                     DOB
-                                    {{if .Header.Admin}}
-                                        &nbsp;&nbsp;&nbsp;<a href="/editclient/0" class="button icon arrowleft">Add client</a>
-                                    {{end}}
                                 </div>
 
                             </th>

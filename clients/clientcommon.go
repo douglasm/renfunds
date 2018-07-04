@@ -47,6 +47,7 @@ var (
 	ErrorDateHighDay      = errors.New("The day is too high")
 	ErrorDateHighMonth    = errors.New("The month is too high")
 	ErrorDateHighYear     = errors.New("The year is too high")
+	errorRenfundsUsed     = errors.New("That RENfunds number is used elsewhere")
 )
 
 // func init() {

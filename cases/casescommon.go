@@ -19,6 +19,9 @@ import (
 	"ssafa/utils"
 )
 
+// Check edit button for case Comments
+// Check preserving of case worker details when editing case
+
 type (
 	CaseList struct {
 		ID         int
@@ -66,9 +69,10 @@ var (
 	key     []byte
 	decoder = schema.NewDecoder()
 
-	ErrorDateCaseUsed = errors.New("That case number is used elsewhere")
-	ErrorDateCMSUsed  = errors.New("That CMS number is used elsewhere")
-	errorCMSMissing   = errors.New("You must enter a CMS number.")
+	ErrorDateCaseUsed  = errors.New("That case number is used elsewhere")
+	ErrorDateCMSUsed   = errors.New("That CMS number is used elsewhere")
+	errorCMSMissing    = errors.New("You must enter a CMS number.")
+	errorReasonMissing = errors.New("You must enter a reason for the case.")
 )
 
 func SetKey(theKey []byte) {
@@ -89,7 +93,7 @@ func SetRoutes(app *iris.Application) {
 	app.Get("/caseclosed/{casenum:int}", closeCase)
 	app.Get("/caseopened/{casenum:int}", openCase)
 
-	app.Get("/caseadd/{clientnum:int}", addCase)
+	app.Any("/caseadd/{clientnum:int}", createCase)
 
 	app.Get("/caseedit/{casenum:int}", editCase)
 	app.Post("/caseedit/{casenum:int}", editCase)

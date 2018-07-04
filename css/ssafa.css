@@ -1895,11 +1895,27 @@ ul.checkbox li label {
   line-height: 1.2em;
   color: #111;
 }
-/* line 136, ../scss/ssafa.scss */
+/* line 135, ../scss/ssafa.scss */
+.inputform input[type=password] {
+  padding: 5px;
+  border: 2px solid #ccc;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  background-color: #FFF;
+  font-family: sans-serif;
+  font-size: .9em;
+  line-height: 1.2em;
+  color: #111;
+}
+/* line 147, ../scss/ssafa.scss */
 .inputform input[type=text]:focus {
   border-color: #333;
 }
-/* line 140, ../scss/ssafa.scss */
+/* line 150, ../scss/ssafa.scss */
+.inputform input[type=password]:focus {
+  border-color: #333;
+}
+/* line 154, ../scss/ssafa.scss */
 .inputform textarea {
   padding: 5px;
   border: 2px solid #ccc;
@@ -1911,11 +1927,11 @@ ul.checkbox li label {
   line-height: 1.2em;
   color: #111;
 }
-/* line 152, ../scss/ssafa.scss */
+/* line 166, ../scss/ssafa.scss */
 .inputform textarea:focus {
   border-color: #333;
 }
-/* line 156, ../scss/ssafa.scss */
+/* line 170, ../scss/ssafa.scss */
 .inputform input[type=submit] {
   padding: 5px 15px;
   background: #ccc;
@@ -1925,8 +1941,8 @@ ul.checkbox li label {
   border-radius: 5px;
 }
 
-/* line 167, ../scss/ssafa.scss */
-.commentform input[type=text] {
+/* line 181, ../scss/ssafa.scss */
+.commentform input[type] {
   padding: 5px;
   border: 2px solid #ccc;
   -webkit-border-radius: 5px;
@@ -1937,15 +1953,15 @@ ul.checkbox li label {
   line-height: 1.2em;
   color: #111;
 }
-/* line 179, ../scss/ssafa.scss */
-.commentform input[type=text]:focus {
+/* line 193, ../scss/ssafa.scss */
+.commentform input[type]:focus {
   border-color: #333;
 }
-/* line 183, ../scss/ssafa.scss */
+/* line 197, ../scss/ssafa.scss */
 .commentform input[type=commit] {
   padding-bottom: 1em;
 }
-/* line 187, ../scss/ssafa.scss */
+/* line 201, ../scss/ssafa.scss */
 .commentform textarea {
   width: 90%;
   padding: 5px;
@@ -1958,11 +1974,11 @@ ul.checkbox li label {
   line-height: 1.2em;
   color: #111;
 }
-/* line 200, ../scss/ssafa.scss */
+/* line 214, ../scss/ssafa.scss */
 .commentform textarea:focus {
   border-color: #333;
 }
-/* line 204, ../scss/ssafa.scss */
+/* line 218, ../scss/ssafa.scss */
 .commentform input[type=submit] {
   padding: 5px 15px;
   background: #ccc;
@@ -1972,9 +1988,15 @@ ul.checkbox li label {
   border-radius: 5px;
 }
 
-/* line 215, ../scss/ssafa.scss */
+/* line 229, ../scss/ssafa.scss */
 .righthead th {
   text-align: right;
+}
+
+/* line 234, ../scss/ssafa.scss */
+.hfloat {
+  display: inline-block;
+  float: left;
 }
 
 /* ------------------------------------------

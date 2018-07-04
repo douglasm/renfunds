@@ -1,0 +1,72 @@
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Resource:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="name" value="{{.Name}}" size="60" required autofocus>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Contact:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="contact" value="{{.Contact}}" size="60">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Phone:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="phone" value="{{.Phone}}" size="60">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>E Mail:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$" value="{{.EMail}}" size="60">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Website:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="url" value="{{.URL}}" size="60">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Comments:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <textarea name="comment" placeholder="Comments" rows="5" cols="60" value="{{.Comment}}">{{.Comment}}</textarea>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Address:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <textarea name="address" placeholder="Address" rows="5" cols="60" value="{{.Address}}">{{.Address}}</textarea>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <input type="hidden" name="checkfield" value="{{.Checkfield}}">
+            <input type="hidden" name="id" value="{{.ID}}">

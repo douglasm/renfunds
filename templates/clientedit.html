@@ -14,7 +14,7 @@
                         <strong>First Name:</strong>
                     </div>
                     <div class="grid_7>">
-                        <input type="text" name="first" placeholder="First Name(s)" size="30" value="{{.Details.First}}">
+                        <input type="text" name="first" placeholder="First Name(s)" size="30" value="{{.Details.First}}" autofocus required>
                     </div>
                 </div>
             </div> <!-- end of row -->
@@ -24,7 +24,7 @@
                         <strong>Surname:</strong>
                     </div>
                     <div class="grid_7>">
-                        <input type="text" name="surname" placeholder="Surname" size="30" value="{{.Details.Surname}}">
+                        <input type="text" name="surname" placeholder="Surname" size="30" value="{{.Details.Surname}}" required>
                     </div>
                 </div>
             </div> <!-- end of row -->
@@ -64,7 +64,7 @@
                         <strong>Address:</strong>
                     </div>
                     <div class="grid_7">
-<textarea name="address" placeholder="Address" rows="4" cols="29" value="{{.Details.Address}}">{{.Details.Address}}</textarea>
+<textarea name="address" placeholder="Address" rows="4" cols="29" value="{{.Details.Address}}" required>{{.Details.Address}}</textarea>
                     </div>
                 </div> <!-- end of grid_10 -->
             </div> <!-- end of row -->

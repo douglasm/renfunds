@@ -7,7 +7,7 @@
         <br />
         <h5>Reset password </h5>
         {{template "error_display.html" .}}
-        <form class="login_form" action="/resetpassword" method="post">
+        <form class="inputform" action="/resetpassword" method="post">
             <label for="un"><strong>email or username:</strong></label><br />
             <p>
               <input type="text" name="un" id="un" placeholder="User Name" value="{{.Details.Username}}" size="30" autofocus>

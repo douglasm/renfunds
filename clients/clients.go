@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"encoding/hex"
 	"fmt"
 	"html"
 	"html/template"
@@ -294,6 +295,7 @@ func showClient(ctx iris.Context) {
 	}
 	details.ServiceNum = theClient.ServiceNum
 	details.Unit = theClient.Unit
+	theClient.Comments = checkComments(theClient.Comments, details.ID)
 	details.Comments = getComments(theClient.Comments, details.ID)
 
 	allCases := getCases(theClient.ID)
@@ -631,6 +633,33 @@ func getComments(comments []db.Comment, clientNum int) (retVal []cases.CommentDi
 		retVal = append(retVal, newComment)
 	}
 	return
+}
+
+func checkComments(comments []db.Comment, clientNum int) []db.Comment {
+	var (
+		newComments  []db.Comment
+		tempComments []db.Comment
+	)
+	for _, item := range comments {
+		theStr := item.Comment
+		looping := true
+		for looping {
+			_, err := hex.DecodeString(theStr)
+			if err != nil {
+				looping = false
+			} else {
+				theStr = crypto.Decrypt(theStr)
+			}
+
+			item.Comment = theStr
+		}
+		tempComments = append(tempComments, item)
+	}
+	for _, item := range tempComments {
+		item.Comment = crypto.Encrypt(item.Comment)
+		newComments = append(newComments, item)
+	}
+	return newComments
 }
 
 func (ce *ClientEdit) checkClient() error {
@@ -974,3 +1003,5 @@ func getVouchers(clientNum int) []voucherDisplay {
 
 // db.clients.update({"_id": 1375}, { $push: { comments: { $each: [ {date: 2018067, name: "Fred Smith"} ], $position: 0 } }})
 // db.clients.update({"_id": 1375}, { $pop: { comments: -1 }})
+
+// mongorestore --collection ysers --db ssafa dump/

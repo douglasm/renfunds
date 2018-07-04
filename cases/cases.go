@@ -20,6 +20,17 @@ import (
 )
 
 type (
+	caseCreate struct {
+		ID         int    `schema:"id"`
+		RENNumber  string `schema:"casenumber"`
+		CMSNumber  string `schema:"cms"`
+		ClientNum  int    `schema:"client"`
+		ClientName string `schema:"_"`
+		Text       string `schema:"text"`
+		Checkfield int    `schema:"checkfield"`
+		Commit     string `schema:"commit"`
+	}
+
 	caseDisplay struct {
 		ID          int
 		Open        bool
@@ -430,9 +441,14 @@ func openCase(ctx iris.Context) {
 	ctx.Redirect(theUrl, http.StatusFound)
 }
 
-func addCase(ctx iris.Context) {
+func createCase(ctx iris.Context) {
 	var (
-		theCase db.Case
+		theCase      db.Case
+		theClient    db.Client
+		details      caseCreate
+		errorMessage string
+		header       types.HeaderRecord
+		err          error
 	)
 
 	clientNum, err := ctx.Params().GetInt("clientnum")
@@ -441,21 +457,60 @@ func addCase(ctx iris.Context) {
 		return
 	}
 
-	// theSession := ctx.Values().Get("session")
+	theSession := ctx.Values().Get("session")
 
 	session := db.MongoSession.Copy()
 	defer session.Close()
 	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
 
-	theCase.ID = db.GetNextSequence(db.CollectionCases)
-	theCase.ClientNum = clientNum
-	theCase.Created = utils.CurrentDate()
-	theCase.Updated = theCase.Created
+	clientColl.FindId(clientNum).One(&theClient)
 
-	caseColl.Insert(&theCase)
+	switch ctx.Method() {
+	case http.MethodGet:
 
-	theUrl := fmt.Sprintf("/case/%d", theCase.ID)
-	ctx.Redirect(theUrl, http.StatusFound)
+	case http.MethodPost:
+		err = decoder.Decode(&details, ctx.FormValues())
+		if err != nil {
+			log.Println("Error: decode casecreate", err)
+			errorMessage = err.Error()
+			break
+		}
+		err = details.check()
+		if err == nil {
+			theCase.ID = db.GetNextSequence(db.CollectionCases)
+			theCase.ClientNum = clientNum
+			theCase.Created = utils.CurrentDate()
+			theCase.Updated = theCase.Created
+			theCase.CMSID = details.CMSNumber
+			theCase.RENNumber = details.RENNumber
+
+			newComment := db.Comment{}
+			newComment.Comment = crypto.Encrypt(details.Text)
+			newComment.Date = theCase.Created
+			newComment.User = theSession.(users.Session).UserNumber
+
+			theCase.Comments = append(theCase.Comments, newComment)
+
+			caseColl.Insert(&theCase)
+			tempStr := fmt.Sprintf("/case/%d", theCase.ID)
+			ctx.Redirect(tempStr, http.StatusFound)
+			return
+		}
+		errorMessage = err.Error()
+	}
+
+	details.ClientNum = clientNum
+	details.ClientName = crypto.Decrypt(theClient.First) + " " + crypto.Decrypt(theClient.Surname)
+
+	header.Admin = theSession.(users.Session).Admin
+	header.Loggedin = theSession.(users.Session).LoggedIn
+	header.Title = "Add new case"
+
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+	ctx.ViewData("ErrorMessage", errorMessage)
+	ctx.View("cases/create.html")
 }
 
 func editCase(ctx iris.Context) {
@@ -772,7 +827,35 @@ func (ce *caseEdit) save() error {
 	return nil
 }
 
-// db.cases.aggregate([{$match: {"cwnum": {$ne: 0}}}, {$lookup: {from: "clients", localField: "clientnum", foreignField: "_id", as: "cd"}}])
+func (cc *caseCreate) check() error {
+	var (
+		theCase db.Case
+		err     error
+	)
 
-// export GIT_SSH_COMMAND='ssh -i identityfile ~/.ssh/id_agabb'
-// cat ~/.ssh/id_zotac.pub | pbcopy
+	cc.CMSNumber = strings.TrimSpace(cc.CMSNumber)
+	cc.RENNumber = strings.TrimSpace(cc.RENNumber)
+	cc.Text = strings.TrimSpace(cc.Text)
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+
+	err = caseColl.Find(bson.M{db.KFieldCaseCMS: cc.CMSNumber}).One(&theCase)
+	if err == nil {
+		return ErrorDateCMSUsed
+	}
+
+	if len(cc.RENNumber) > 0 {
+		cc.RENNumber = strings.ToUpper(cc.RENNumber)
+		err = caseColl.Find(bson.M{db.KFieldCaseNum: cc.RENNumber}).One(&theCase)
+		if err == nil {
+			return ErrorDateCaseUsed
+		}
+	}
+
+	if len(cc.Text) == 0 {
+		return errorReasonMissing
+	}
+	return nil
+}

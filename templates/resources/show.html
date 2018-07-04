@@ -7,84 +7,64 @@
     <div class="grid_12">
         <div class="row">
             <div class="grid_9">
-                <h4>Renfunds voucher</h4>
+                <h4>{{.Details.Name}}</h4>
                 <div class="row">
                     <div class="grid_10">
                         <div class="grid_2">
-                            <strong>Renfunds number:</strong>
+                            <strong>Contact:</strong>
                         </div>
                         <div class="grid_7">
-                            <a href="/case/{{.Details.CaseID}}">{{.Details.RENNumber}}</a>
+                            {{.Details.Contact}}
                         </div>
                     </div>
                 </div> <!-- end of row -->
                 <div class="row">
                     <div class="grid_10">
                         <div class="grid_2">
-                            <strong>Client:</strong>
+                            <strong>Phone:</strong>
                         </div>
                         <div class="grid_7">
-                            <a href="/client/{{.Details.ClientID}}">{{.Details.Client}}</a>
+                            {{.Details.Phone}}
                         </div>
                     </div>
                 </div> <!-- end of row -->
                 <div class="row">
                     <div class="grid_10">
                         <div class="grid_2">
-                            <strong>Case worker:</strong>
+                            <strong>E Mail:</strong>
                         </div>
                         <div class="grid_7">
-                            {{.Details.CaseWorker}}
+                            {{.Details.EMail}}
                         </div>
                     </div>
                 </div> <!-- end of row -->
                 <div class="row">
                     <div class="grid_10">
                         <div class="grid_2">
-                            <strong>Establishment:</strong>
+                            <strong>Website:</strong>
                         </div>
                         <div class="grid_7">
-                            {{.Details.Establishment}}
+                            {{if .Details.URL}}<a href="{{.Details.Link}}">{{.Details.URL}}</a>{{end}}
                         </div>
                     </div>
                 </div> <!-- end of row -->
                 <div class="row">
                     <div class="grid_10">
                         <div class="grid_2">
-                            <strong>Amount:</strong>
+                            <strong>Comments:</strong>
                         </div>
                         <div class="grid_7">
-                            {{.Details.Amount}}
+                            {{.Details.Comments}}
                         </div>
                     </div>
                 </div> <!-- end of row -->
                 <div class="row">
                     <div class="grid_10">
                         <div class="grid_2">
-                            <strong>Remaining:</strong>
+                            <strong>Address:</strong>
                         </div>
                         <div class="grid_7">
-                            {{.Details.Remains}}
-                        </div>
-                    </div>
-                </div> <!-- end of row -->
-                <div class="row">
-                    <div class="grid_10">
-                        <div class="grid_2">
-                            <strong>Invoice:</strong>
-                        </div>
-                        <div class="grid_7">
-                            {{.Details.Invoice}}
-                        </div>
-                    </div>
-                </div> <!-- end of row -->
-                <div class="row">
-                    <div class="grid_10">
-                        <div class="grid_2">
-                            <strong>Issued:</strong>
-                        </div>
-                        <div class="grid_7">
-                            {{.Details.Date}}
+                            {{.Details.Address}}
                         </div>
                     </div>
                 </div> <!-- end of row -->
@@ -104,10 +84,10 @@
                             &nbsp;
                         </div>
                         <div class="grid_2">
-                            <a href="/voucheredit/{{.Details.ID}}" class="button icon edit">Edit</a>
+                            <a href="/resourceedit/{{.Details.ID}}" class="button icon edit">Edit</a>
                         </div>
                         <div class="grid_5">
-                            <a href="/voucherdelete/{{.Details.ID}}" class="button icon danger trash">Delete</a>
+                            <a href="/resourcedelete/{{.Details.ID}}" class="button icon danger trash">Delete</a>
                         </div>
                     </div>
                 </div> <!-- end of row -->

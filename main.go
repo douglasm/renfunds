@@ -20,6 +20,7 @@ import (
 	"ssafa/cookie"
 	"ssafa/crypto"
 	"ssafa/db"
+	"ssafa/resources"
 	"ssafa/types"
 	"ssafa/users"
 	"ssafa/vouchers"
@@ -115,41 +116,10 @@ func main() {
 	defer close()
 
 	app.Use(r)
-	// customLogger := logger.New(logger.Config{
-	// 	// Status displays status code
-	// 	Status: true,
-	// 	// IP displays request's remote address
-	// 	IP: true,
-	// 	// Method displays the http method
-	// 	Method: true,
-	// 	// Path displays the request path
-	// 	Path: true,
-
-	// 	//Columns: true,
-
-	// 	// if !empty then its contents derives from `ctx.Values().Get("logger_message")
-	// 	// will be added to the logs.
-	// 	MessageContextKey: "logger_message",
-	// })
-
-	// app.Use(customLogger)
-	// - standard html  | iris.HTML(...)
 	app.Use(authCheck)
-	// - standard html  | iris.HTML(...)
-	// - django         | iris.Django(...)
-	// - pug(jade)      | iris.Pug(...)
-	// - handlebars     | iris.Handlebars(...)
-	// - amber          | iris.Amber(...)
 
 	tmpl := iris.HTML("./templates", ".html")
 	tmpl.Reload(true) // reload templates on each request (development mode)
-	// default template funcs are:
-	//
-	// - {{ urlpath "mynamedroute" "pathParameter_ifneeded" }}
-	// - {{ render "header.html" }}
-	// - {{ render_r "header.html" }} // partial relative path to current page
-	// - {{ yield }}
-	// - {{ current }}
 	tmpl.AddFunc("greet", func(s string) string {
 		return "Greetings " + s + "!"
 	})
@@ -167,17 +137,14 @@ func main() {
 	cases.SetRoutes(app)
 	admin.SetRoutes(app)
 	vouchers.SetRoutes(app)
+	resources.SetRoutes(app)
 
 	clients.OrderClients()
-
-	// users.CheckPassword("pete livesey footless crow")
-	// users.CheckPassword("P@ssw0rd")
 
 	// mail.SendActivate("dgmccallum@gmail.com", "bananas")
 
 	// restoreUsers()
 
-	// http://localhost:9039
 	thePort := fmt.Sprintf(":%d", config.Port)
 	app.Run(iris.Addr(thePort), iris.WithCharset("UTF-8")) // defaults to that but you can change it.
 }
@@ -196,7 +163,7 @@ func hi(ctx iris.Context) {
 		// }
 		// if !theSession.LoggedIn {
 		header.Title = "RF: Login"
-		// details := users.LoginRecord{Username: "mccallum_ir", Password: "bowpa1132"}
+		header.Scripts = append(header.Scripts, "passwordtoggle")
 		details := users.LoginRecord{}
 		ctx.ViewData("User", user)
 		ctx.ViewData("Details", details)

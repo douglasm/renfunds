@@ -3,6 +3,8 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"html"
+	"html/template"
 	"strconv"
 	"strings"
 )
@@ -77,4 +79,27 @@ func IntToString(theVal, numdp int) string {
 		return strings.TrimRight(tempStr, "0")
 	}
 	return tempStr
+}
+
+func ValidateURL(theURL string) string {
+	if strings.Index(theURL, "http://") == 0 {
+		return theURL
+	}
+	if strings.Index(theURL, "https://") == 0 {
+		return theURL
+	}
+	return "http://" + theURL
+}
+
+func EscapeString(theString string) template.HTML {
+	if len(theString) == 0 {
+		return template.HTML("")
+	}
+
+	theString = html.EscapeString(theString)
+	theString = strings.Replace(theString, "\r\n", "\r", -1)
+	theString = strings.Replace(theString, "\n", "\r", -1)
+	theString = strings.Replace(theString, "\r", "<br />", -1)
+
+	return template.HTML(theString)
 }

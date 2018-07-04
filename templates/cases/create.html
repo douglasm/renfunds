@@ -1,0 +1,60 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h5>{{.Details.ClientName}}</h5>
+        {{template "error_display.html" .}}
+        <form class="inputform" action="/caseadd/{{.Details.ClientNum}}" method="post">
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>CMS number:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="cms" placeholder="CMS number" size="30" value="{{.Details.CMSNumber}}" autofocus required>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>REN number:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <input type="text" name="casenumber" placeholder="RENFunds number" size="30" value="{{.Details.RENNumber}}" required>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Reason for case:</strong>
+                    </div>
+                    <div class="grid_7">
+                        <textarea name="text" placeholder="Reason for case" rows="4" cols="40" value="{{.Details.Text}}" required>{{.Details.Text}}</textarea>
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+            <input type="hidden" name="id" value="{{.Details.ID}}">
+            <input type="hidden" name="client" value="{{.Details.ClientNum}}">
+            <input type="hidden" name="checkfield" value="{{.Details.Checkfield}}">
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <input name="commit" type="submit" value="Save">
+                    </div>
+                    <div class="grid_7">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+        </form>
+        <hr />
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 {{template "header.html" .Header}}
 
-<body>
+<body style="background-color: #EED">
 {{template "navbar.html" .}}
 
 <div class="row">
@@ -104,6 +104,7 @@
                             <input type="hidden" name="id" value="{{.Details.ID}}">
                             <input name="commit" type="submit" value="Add comment">
                         </td>
+                        <td></td>
                     </tr>
                 </form>
                 {{range $element := .Details.Comments}}

@@ -7,7 +7,7 @@
     <div class="grid_12">
         <h5>Activate profile </h5>
         {{template "error_display.html" .}}
-        <form class="login_form" action="/activate/{{.Details.Code}}" method="post">
+        <form class="inputform" action="/activate/{{.Details.Code}}" method="post">
           {{with .Details}}
             <label for="un"><strong>Username:</strong></label><br />
             <p>

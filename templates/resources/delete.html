@@ -1,0 +1,64 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h4>Delete resource {{.Details.Name}}</h4>
+        <div class="row">
+            <div class="grid_10">
+                <div class="grid_2">
+                    &nbsp;
+                </div>
+                <div class="grid_7">
+                    &nbsp;
+                </div>
+            </div>
+        </div> <!-- end of row -->
+        <div class="row">
+            <div class="grid_10">
+                <div class="grid_2">
+                    <a href="/resourceremove/{{.Details.ID}}" class="button danger icon trash">Delete</a>
+                </div>
+                <div class="grid_7">
+                    <h5>Press Delete to remove the resource.</h5>
+                </div>
+            </div>
+        </div> <!-- end of row -->
+        <div class="row">
+            <div class="grid_10">
+                <div class="grid_2">
+                    &nbsp;
+                </div>
+                <div class="grid_7">
+                    &nbsp;
+                </div>
+            </div>
+        </div> <!-- end of row -->
+        <div class="row">
+            <div class="grid_10">
+                <div class="grid_2">
+                    <a href="/resource/{{.Details.ID}}" class="button icon remove">Cancel</a>
+                </div>
+                <div class="grid_7">
+                    <h5>Press Cancel to keep the resource.</h5>
+                </div>
+            </div>
+        </div> <!-- end of row -->
+        <div class="row">
+            <div class="grid_10">
+                <div class="grid_2">
+                    &nbsp;
+                </div>
+                <div class="grid_7">
+                    &nbsp;
+                </div>
+            </div>
+        </div> <!-- end of row -->
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>

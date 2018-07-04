@@ -8,7 +8,7 @@
     <h5>Password reset </h5>
     {{template "error_display.html" .}}
     {{with .Details}}
-      <form class="login_form" action="/reset{{if .HasCode}}/{{.Code}}{{end}}" method="post">
+      <form class="inputform" action="/reset{{if .HasCode}}/{{.Code}}{{end}}" method="post">
         {{if .HasCode}}
           <input type="hidden" name="code" id="ac" placeholder="Code" value="{{.Code}}" size="30">
         {{else}}

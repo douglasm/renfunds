@@ -1,0 +1,54 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <p><h4 class="hfloat">Resources</h4>
+            {{if .Header.Admin}}
+                &nbsp;&nbsp;&nbsp;<a href="/resourceadd" class="button icon add">Add resoure</a>
+            {{end}}
+        </p><br />
+        {{if .NavButtons.HasNav}}
+            {{template "navbuttons.html" .NavButtons}}
+        {{end}}
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-class="expand">
+                                Resource
+                            </th>
+                            <th>
+                                Contact
+                            </th>
+                            <th>
+                                Phone
+                            </th>
+                            <th>
+                                E Mail
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range $element := .Details}}
+                            <tr>
+                                <td align="left"><a href="/resource/{{$element.ID}}" >{{$element.Name}}</a></td>
+                                <td align="left">{{$element.Contact}}</td>
+                                <td align="left">{{$element.Phone}}</td>
+                                <td align="left">{{$element.EMail}}</td>
+                            </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                {{if .NavButtons.HasNav}}
+                    <p>
+                    {{template "navbuttons.html" .NavButtons}}
+                    </p>
+                {{end}}
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+
+</body>
+</html>

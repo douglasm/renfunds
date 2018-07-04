@@ -51,6 +51,7 @@ func SendReset(email, code string) {
 
 	sendAddress := fmt.Sprintf("noreply@%s", domain)
 
+	log.Println("Reset password", email, code)
 	mg := mailgun.NewMailgun(mgDomain, mgKey, "")
 	m := mg.NewMessage(
 		sendAddress,

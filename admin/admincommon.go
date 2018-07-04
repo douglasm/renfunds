@@ -27,6 +27,7 @@ type (
 		Surname    string
 		Role       string
 		Based      string
+		UserName   string
 		Admin      bool
 		AdminStr   string
 		AdminLink  string

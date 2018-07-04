@@ -46,7 +46,7 @@ func adminPerson(ctx iris.Context) {
 		result        db.User
 		allPersonnel  []managePerson
 		columnHeaders []types.SortItem
-		colNames      = []string{"First", "Surname", "Role", "Admin", "Based", "Active"}
+		colNames      = []string{"First", "Surname", "Role", "Admin", "Based", "User name", "Active"}
 	)
 
 	theSession := ctx.Values().Get("session")
@@ -90,6 +90,7 @@ func adminPerson(ctx iris.Context) {
 		newPerson.Surname = crypto.Decrypt(result.Surname)
 		newPerson.Role = result.Position
 		newPerson.Based = result.Based
+		newPerson.UserName = result.Username
 		if result.Admin {
 			newPerson.AdminStr = "Yes"
 		} else {

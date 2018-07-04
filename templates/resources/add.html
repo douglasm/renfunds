@@ -1,0 +1,27 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h4>Add resource</h4>
+        {{template "error_display.html" .}}
+        <form class="inputform" action="/resourceadd" method="post">
+            {{template "resources/input.html" .Details}}
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        &nbsp;
+                    </div>
+                    <div class="grid_7">
+                        <input name="commit" type="submit" value="Save">
+                    </div>
+                </div>
+            </div> <!-- end of row -->
+        </form>
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+</body>
+</html>
