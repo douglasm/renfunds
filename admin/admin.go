@@ -328,10 +328,8 @@ func (pa *personAdd) save() {
 	theUser.EMail = crypto.Encrypt(pa.EMail)
 	theUser.Position = pa.Role
 	theUser.Based = pa.Based
-	theUser.Admin = pa.Admin
 	theUser.ActivateCode = crypto.RandomLower(users.KActivateLength)
 	theUser.ActivateTime = time.Now().Unix() + users.KActivateTime
-	theUser.InActive = true
 
 	theUser.ID = db.GetNextSequence(db.CollectionUsers)
 	userColl.Insert(&theUser)

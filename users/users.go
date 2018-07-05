@@ -100,7 +100,6 @@ func getUserList(ctx iris.Context) {
 		}
 
 		theName := crypto.Decrypt(theUser.First) + " " + crypto.Decrypt(theUser.Surname)
-		// fmt.Println(theName, searchTerm)
 		if strings.Contains(strings.ToLower(theName), searchTerm) {
 			newUser := userChoice{ID: theUser.ID, Name: theName}
 			userList = append(userList, newUser)
@@ -108,7 +107,6 @@ func getUserList(ctx iris.Context) {
 		}
 	}
 	iter.Close()
-	// fmt.Println(userList)
 
 	ctx.JSON(userList)
 }
@@ -386,9 +384,7 @@ func (er editRec) save() {
 		tempBool = true
 	}
 
-	if theUser.Admin != tempBool {
-		sets[db.KFieldUserAdmin] = tempBool
-	}
+	sets[db.KFieldUserAdmin] = tempBool
 
 	if len(sets) == 0 {
 		return
