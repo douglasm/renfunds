@@ -216,3 +216,21 @@ func (nr *NavButtonRecord) SetNavButtons(data M) {
 		}
 	}
 }
+
+func (nb *NavButtonRecord) FillNav(hasNext bool, pageNum int, linkName string) {
+	if pageNum > 0 {
+		nb.HasNav = true
+		nb.HasPrev = true
+		if pageNum > 1 {
+			nb.PrevLink = fmt.Sprintf("%s/%d", linkName, pageNum-1)
+		} else {
+			nb.PrevLink = linkName
+		}
+	}
+
+	if hasNext {
+		nb.HasNav = true
+		nb.HasNext = true
+		nb.NextLink = fmt.Sprintf("%s/%d", linkName,pageNum+1)
+	}
+}

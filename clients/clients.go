@@ -35,21 +35,22 @@ type (
 	ClientList []ClientShow
 
 	ClientDisplay struct {
-		ID         int
-		First      string
-		Surname    string
-		Phone      string
-		Mobile     string
-		EMail      string
-		DOB        string
-		NINum      string
-		ServiceNum string
-		Unit       string
-		Address    template.HTML
-		PostCode   string
-		Comments   []cases.CommentDisplay
-		Cases      []cases.CaseList
-		Vouchers   []voucherDisplay
+		ID           int
+		First        string
+		Surname      string
+		Phone        string
+		Mobile       string
+		EMail        string
+		DOB          string
+		NINum        string
+		ServiceNum   string
+		Unit         string
+		Address      template.HTML
+		PostCode     string
+		Comments     []cases.CommentDisplay
+		Cases        []cases.CaseList
+		Vouchers     []voucherDisplay
+		AllowCaseAdd bool
 	}
 
 	ClientEdit struct {
@@ -262,6 +263,7 @@ func showClient(ctx iris.Context) {
 	session := db.MongoSession.Copy()
 	defer session.Close()
 	clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
 
 	err = clientColl.FindId(clientNum).One(&theClient)
 	if err != nil {
@@ -295,6 +297,13 @@ func showClient(ctx iris.Context) {
 	}
 	details.ServiceNum = theClient.ServiceNum
 	details.Unit = theClient.Unit
+
+	query := bson.M{db.KFieldCaseClientNum: theClient.ID, db.KFieldCaseClosed: false}
+	num, _ := caseColl.Find(query).Count()
+	if num == 0 {
+		details.AllowCaseAdd = true
+	}
+
 	theClient.Comments = checkComments(theClient.Comments, details.ID)
 	details.Comments = getComments(theClient.Comments, details.ID)
 
@@ -419,7 +428,8 @@ func editComment(ctx iris.Context) {
 
 		for _, item := range theClient.Comments {
 			if item.Num == commentNum {
-				details.Comment = crypto.Decrypt(item.Comment)
+				details.Comment = decodeComment(item.Comment)
+				// details.Comment = crypto.Decrypt(item.Comment)
 				gotOne = true
 				break
 			}
@@ -627,7 +637,7 @@ func (ce *ClientEdit) fillEdit(theClient db.Client) {
 func getComments(comments []db.Comment, clientNum int) (retVal []cases.CommentDisplay) {
 	for _, item := range comments {
 		newComment := cases.CommentDisplay{}
-		newComment.GetCommentDisplay(item)
+		newComment.GetCommentDisplay(item, clientNum)
 		newComment.Item = clientNum
 		newComment.Num = item.Num
 		retVal = append(retVal, newComment)
@@ -655,11 +665,32 @@ func checkComments(comments []db.Comment, clientNum int) []db.Comment {
 		}
 		tempComments = append(tempComments, item)
 	}
-	for _, item := range tempComments {
+	for i, item := range tempComments {
+		item.Num = i + 1
 		item.Comment = crypto.Encrypt(item.Comment)
 		newComments = append(newComments, item)
 	}
+	if len(newComments) != 0 {
+		session := db.MongoSession.Copy()
+		defer session.Close()
+		clientColl := session.DB(db.MainDB).C(db.CollectionClients)
+		update := bson.M{"$set": bson.M{db.KFieldClientsComments: newComments}}
+		clientColl.UpdateId(clientNum, update)
+	}
 	return newComments
+}
+
+func decodeComment(theComment string) string {
+	looping := true
+	for looping {
+		_, err := hex.DecodeString(theComment)
+		if err != nil {
+			looping = false
+		} else {
+			theComment = crypto.Decrypt(theComment)
+		}
+	}
+	return theComment
 }
 
 func (ce *ClientEdit) checkClient() error {

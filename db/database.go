@@ -58,6 +58,7 @@ const (
 	KFieldCaseShredded   = "shredded"
 	KFieldCaseAdded      = "added"
 	KFieldCaseDateClosed = "dateclosed"
+	FieldCaseComments    = "comments"
 )
 
 const (
@@ -192,10 +193,9 @@ type (
 		UserIssuing int       `bson:"usernum,omitempty"`
 		Based       string    `bson:"based,omitempty"`
 		Alert       string    `bson:"alert,omitempty"`
-
-		Order   int `bson:"order"`
-		Created int `bson:"create,omitempty"`
-		Changed int `bson:"change,omitempty"`
+		Order       int       `bson:"order"`
+		Created     int       `bson:"create,omitempty"`
+		Changed     int       `bson:"change,omitempty"`
 	}
 
 	Collection struct {
@@ -311,6 +311,7 @@ type (
 		EMail    string `bson:"email,omitempty"`
 		Contact  string `bson:"contact,omitempty"`
 		Comments string `bson:"comments,omitempty"`
+		Fund     bool   `bson:"fund,omitempty"`
 		Updated  int64  `bson:"updated,omitempty"`
 	}
 
@@ -348,6 +349,7 @@ type (
 		ActivateCode string `bson:"activate,omitempty"`
 		ActivateTime int64  `bson:"activatetime,omitempty"`
 		InActive     bool   `bson:"inactive"`
+		Hidden       bool   `bson:"hidden"`
 		Comments     string `bson:"comments,omitempty"`
 	}
 

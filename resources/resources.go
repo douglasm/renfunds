@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/globalsign/mgo/bson"
@@ -16,7 +17,23 @@ import (
 	"ssafa/utils"
 )
 
+func resourceSearch(ctx iris.Context) {
+	var (
+		theSearch types.SearchRecord
+	)
+	data := ctx.FormValues()
+	err := decoder.Decode(&theSearch, data)
+	if err != nil {
+		log.Println("Error: Resource search", err)
+	}
+	findResources(ctx, theSearch.Term)
+}
+
 func listResources(ctx iris.Context) {
+	findResources(ctx, "")
+}
+
+func findResources(ctx iris.Context, searchStr string) {
 	type (
 		resourceItem struct {
 			ID      int    `bson:"_id"`
@@ -33,17 +50,13 @@ func listResources(ctx iris.Context) {
 		theResource resourceItem
 		details     []listItem
 		header      types.HeaderRecord
-		// result      bson.M
-		navButtons types.NavButtonRecord
-		err        error
+		pipeline    []bson.M
+		navButtons  types.NavButtonRecord
+		err         error
 	)
 
 	theSession := ctx.Values().Get("session")
 	if !theSession.(users.Session).LoggedIn {
-		ctx.Redirect("/", http.StatusFound)
-		return
-	}
-	if !theSession.(users.Session).Admin {
 		ctx.Redirect("/", http.StatusFound)
 		return
 	}
@@ -64,12 +77,17 @@ func listResources(ctx iris.Context) {
 
 	resourceColl := session.DB(db.MainDB).C(db.CollectionResources)
 
+	match := bson.M{"$match": bson.M{db.FieldResourceName: bson.M{"$regex": strings.ToLower(searchStr), "$options": "-i"}}}
 	project := bson.M{"$project": bson.M{"name": 1, "contact": 1, "email": 1, "phone": 1, "lower": bson.M{"$toLower": "$name"}}}
 	skip := bson.M{"$skip": theSkip}
 	limit := bson.M{"$limit": types.KListLimit + 1}
 	sort := bson.M{"$sort": bson.M{"lower": 1}}
 
-	pipeline := []bson.M{project, sort, skip, limit}
+	if len(searchStr) > 0 {
+		pipeline = []bson.M{match, project, sort, skip, limit}
+	} else {
+		pipeline = []bson.M{project, sort, skip, limit}
+	}
 
 	iter := resourceColl.Pipe(pipeline).Iter()
 	for iter.Next(&theResource) {

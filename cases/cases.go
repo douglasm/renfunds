@@ -1,6 +1,7 @@
 package cases
 
 import (
+	"encoding/hex"
 	"fmt"
 	"html/template"
 	"log"
@@ -164,9 +165,11 @@ func showCase(ctx iris.Context) {
 	iter.Close()
 
 	details.ClientNum = theClient.ID
+
+	theCase.Comments = checkComments(theCase.Comments, details.ID)
 	for _, item := range theCase.Comments {
 		newComment := CommentDisplay{}
-		newComment.GetCommentDisplay(item)
+		newComment.GetCommentDisplay(item, details.ID)
 		details.Reports = append(details.Reports, newComment)
 	}
 
@@ -252,7 +255,7 @@ func deleteCase(ctx iris.Context) {
 	details.ClientNum = theClient.ID
 	for _, item := range theCase.Comments {
 		newComment := CommentDisplay{}
-		newComment.GetCommentDisplay(item)
+		newComment.GetCommentDisplay(item, details.ID)
 		details.Reports = append(details.Reports, newComment)
 	}
 
@@ -297,9 +300,10 @@ func listCases(ctx iris.Context) {
 		details []CaseList
 		// theCase db.Case
 		// theClient db.Client
-		header  types.HeaderRecord
-		pageNum int
-		err     error
+		header     types.HeaderRecord
+		navButtons types.NavButtonRecord
+		pageNum    int
+		err        error
 	)
 
 	pageNum, err = ctx.Params().GetInt("pagenum")
@@ -312,7 +316,9 @@ func listCases(ctx iris.Context) {
 	match := bson.M{"$match": bson.M{db.KFieldCaseClientNum: bson.M{"$ne": 0}}}
 	sort := bson.M{"$sort": bson.M{db.KFieldCaseCreated: 1}}
 
-	details, _ = GetCases(pageNum, match, sort)
+	details, navButtons.HasNext = GetCases(pageNum, match, sort)
+
+	navButtons.FillNav(navButtons.HasNext, pageNum, "cases")
 
 	header.Title = "RF: Cases"
 	header.Loggedin = theSession.(users.Session).LoggedIn
@@ -320,6 +326,7 @@ func listCases(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
+	ctx.ViewData("NavButtons", navButtons)
 	ctx.View("cases/list.html")
 }
 
@@ -328,9 +335,10 @@ func openCases(ctx iris.Context) {
 		details []CaseList
 		// theCase db.Case
 		// theClient db.Client
-		header  types.HeaderRecord
-		pageNum int
-		err     error
+		header     types.HeaderRecord
+		navButtons types.NavButtonRecord
+		pageNum    int
+		err        error
 	)
 
 	pageNum, err = ctx.Params().GetInt("pagenum")
@@ -342,7 +350,9 @@ func openCases(ctx iris.Context) {
 	match := bson.M{"$match": bson.M{db.KFieldCaseClosed: false}}
 	sort := bson.M{"$sort": bson.M{db.KFieldCaseCreated: 1}}
 
-	details, _ = GetCases(pageNum, match, sort)
+	details, navButtons.HasNext = GetCases(pageNum, match, sort)
+
+	navButtons.FillNav(navButtons.HasNext, pageNum, "casesopen")
 
 	header.Title = "RF: Open Cases"
 	header.Loggedin = theSession.(users.Session).LoggedIn
@@ -350,6 +360,7 @@ func openCases(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
+	ctx.ViewData("NavButtons", navButtons)
 	ctx.View("cases/open.html")
 }
 
@@ -359,6 +370,7 @@ func unassignedCases(ctx iris.Context) {
 		// theCase db.Case
 		// theClient db.Client
 		header  types.HeaderRecord
+		navButtons types.NavButtonRecord
 		pageNum int
 		err     error
 	)
@@ -372,7 +384,9 @@ func unassignedCases(ctx iris.Context) {
 	match := bson.M{"$match": bson.M{db.KFieldCaseWorkerNum: 0, db.KFieldCaseClosed: false}}
 	sort := bson.M{"$sort": bson.M{db.KFieldCaseCreated: 1}}
 
-	details, _ = GetCases(pageNum, match, sort)
+	details, navButtons.HasNext = GetCases(pageNum, match, sort)
+
+	navButtons.FillNav(navButtons.HasNext, pageNum, "casesunassign")
 
 	header.Title = "RF: Unassigned Cases"
 	header.Loggedin = theSession.(users.Session).LoggedIn
@@ -380,6 +394,7 @@ func unassignedCases(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
+	ctx.ViewData("NavButtons", navButtons)
 	ctx.View("cases/unassign.html")
 }
 
@@ -389,6 +404,7 @@ func inactiveCases(ctx iris.Context) {
 		// theCase db.Case
 		// theClient db.Client
 		header  types.HeaderRecord
+		navButtons types.NavButtonRecord
 		pageNum int
 		err     error
 	)
@@ -402,7 +418,9 @@ func inactiveCases(ctx iris.Context) {
 	match := bson.M{"$match": bson.M{db.KFieldCaseWorkerNum: 0, db.KFieldCaseClosed: false}}
 	sort := bson.M{"$sort": bson.M{db.KFieldCaseUpdated: 1}}
 
-	details, _ = GetCases(pageNum, match, sort)
+	details, navButtons.HasNext = GetCases(pageNum, match, sort)
+
+	navButtons.FillNav(navButtons.HasNext, pageNum, "casesinactive")
 
 	header.Title = "RF: Inactive Cases"
 	header.Loggedin = theSession.(users.Session).LoggedIn
@@ -410,6 +428,7 @@ func inactiveCases(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
+	ctx.ViewData("NavButtons", navButtons)
 	ctx.View("cases/inactive.html")
 }
 
@@ -669,6 +688,112 @@ func addComment(ctx iris.Context) {
 	ctx.Redirect(fmt.Sprintf("/case/%d", caseNum), http.StatusFound)
 }
 
+func editComment(ctx iris.Context) {
+	var (
+		theCase      db.Case
+		details      commentEdit
+		header       types.HeaderRecord
+		caseNum      int
+		commentNum   int
+		gotOne       bool
+		errorMessage string
+		err          error
+	)
+
+	theSession := ctx.Values().Get("session")
+	if !theSession.(users.Session).LoggedIn {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	caseNum, err = ctx.Params().GetInt("casenum")
+	if err != nil {
+		ctx.Redirect("/cases", http.StatusFound)
+		return
+	}
+
+	commentNum, err = ctx.Params().GetInt("commentnum")
+	if err != nil {
+		theUrl := fmt.Sprintf("/case/%d", caseNum)
+		ctx.Redirect(theUrl, http.StatusFound)
+		return
+	}
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+
+	details.Message = "Edit case comment"
+	details.Link = fmt.Sprintf("/casecomment/%d/%d", caseNum, commentNum)
+	details.ID = caseNum
+	details.Num = commentNum
+
+	switch ctx.Method() {
+	case http.MethodGet:
+		err = caseColl.FindId(caseNum).One(&theCase)
+		if err != nil {
+			theUrl := fmt.Sprintf("/case/%d", caseNum)
+			ctx.Redirect(theUrl, http.StatusFound)
+			return
+		}
+
+		for _, item := range theCase.Comments {
+			if item.Num == commentNum {
+				details.Comment = decodeComment(item.Comment)
+				// details.Comment = crypto.Decrypt(item.Comment)
+				gotOne = true
+				break
+			}
+		}
+		if !gotOne {
+			theUrl := fmt.Sprintf("/case/%d", caseNum)
+			ctx.Redirect(theUrl, http.StatusFound)
+			return
+		}
+
+	case http.MethodPost:
+		err = decoder.Decode(&details, ctx.FormValues())
+		if err != nil {
+			log.Println("Error: edit case comment decode", err)
+		}
+
+		err = caseColl.FindId(caseNum).One(&theCase)
+		if err != nil {
+			theUrl := fmt.Sprintf("/case/%d", caseNum)
+			ctx.Redirect(theUrl, http.StatusFound)
+			return
+		}
+
+		newComments := []db.Comment{}
+		for _, item := range theCase.Comments {
+			if item.Num == commentNum {
+				item.Comment = crypto.Encrypt(details.Comment)
+				gotOne = true
+			}
+			newComments = append(newComments, item)
+		}
+		if gotOne {
+			err = caseColl.UpdateId(caseNum, bson.M{"$set": bson.M{db.FieldCaseComments: newComments}})
+			if err != nil {
+				log.Println("Update err:", err)
+			}
+		}
+
+		theUrl := fmt.Sprintf("/case/%d", caseNum)
+		ctx.Redirect(theUrl, http.StatusFound)
+		return
+	}
+
+	header.Loggedin = theSession.(users.Session).LoggedIn
+	header.Admin = theSession.(users.Session).Admin
+	header.Title = "RF: Edit case comment"
+
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+	ctx.ViewData("ErrorMessage", errorMessage)
+	ctx.View("commentedit.html")
+}
+
 func GetCases(pageNum int, match, sort bson.M) ([]CaseList, bool) {
 	var (
 		// theCase  db.Case
@@ -703,8 +828,6 @@ func GetCases(pageNum int, match, sort bson.M) ([]CaseList, bool) {
 	// pipeline := []bson.M{match, sort, skip, limit, lookup}
 	// pipeline := []bson.M{match, sort, project, skip, limit}
 	pipeline := []bson.M{match, sort, project, skip, limit, lookupClient, lookupUser}
-	// fmt.Println(project)
-	// fmt.Println(lookup)
 
 	// iter := caseColl.Find(nil).Skip(theSkip).Limit(types.KListLimit + 1).Sort(db.KFieldCaseUpdated).Iter()
 	iter := caseColl.Pipe(pipeline).Iter()
@@ -858,4 +981,39 @@ func (cc *caseCreate) check() error {
 		return errorReasonMissing
 	}
 	return nil
+}
+
+func checkComments(comments []db.Comment, caseNum int) []db.Comment {
+	var (
+		newComments  []db.Comment
+		tempComments []db.Comment
+	)
+	for _, item := range comments {
+		theStr := item.Comment
+		looping := true
+		for looping {
+			_, err := hex.DecodeString(theStr)
+			if err != nil {
+				looping = false
+			} else {
+				theStr = crypto.Decrypt(theStr)
+			}
+
+			item.Comment = theStr
+		}
+		tempComments = append(tempComments, item)
+	}
+	for i, item := range tempComments {
+		item.Num = i + 1
+		item.Comment = crypto.Encrypt(item.Comment)
+		newComments = append(newComments, item)
+	}
+	if len(newComments) != 0 {
+		session := db.MongoSession.Copy()
+		defer session.Close()
+		caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+		update := bson.M{"$set": bson.M{db.FieldCaseComments: newComments}}
+		caseColl.UpdateId(caseNum, update)
+	}
+	return newComments
 }

@@ -7,7 +7,8 @@
     <div class="grid_9">
         <h4>{{.Details.First}} {{.Details.Surname}}
             &nbsp;&nbsp;<a href="/editclient/{{.Details.ID}}"
-            class="button">Edit</a> &nbsp;&nbsp;<a href="/caseadd/{{.Details.ID}}" class="button">Add case</a>
+            class="button">Edit</a> &nbsp;&nbsp;
+            {{if .Details.AllowCaseAdd}}<a href="/caseadd/{{.Details.ID}}" class="button">Add case</a>{{end}}
          </h4>
 
         <div clas="row">

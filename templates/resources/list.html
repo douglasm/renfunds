@@ -3,15 +3,18 @@
 <body>
 {{template "navbar.html" .}}
 
+
 <div class="row">
     <div class="grid_12">
+        <div class="row">
+            <div class="grid_9">
         <p><h4 class="hfloat">Resources</h4>
             {{if .Header.Admin}}
                 &nbsp;&nbsp;&nbsp;<a href="/resourceadd" class="button icon add">Add resoure</a>
             {{end}}
         </p><br />
         {{if .NavButtons.HasNav}}
-            {{template "navbuttons.html" .NavButtons}}
+            <p>{{template "navbuttons.html" .NavButtons}}</p>
         {{end}}
                 <table>
                     <thead>
@@ -46,6 +49,9 @@
                     {{template "navbuttons.html" .NavButtons}}
                     </p>
                 {{end}}
+            </div> <!-- end of grid_9 -->
+            {{template "resourcesearch.html" .}}
+        </div> <!-- end of row -->
     </div> <!-- end of grid_12 -->
 </div> <!-- end of row -->
 

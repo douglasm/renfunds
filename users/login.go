@@ -116,7 +116,6 @@ func resetPassword(ctx iris.Context) {
 		err := decoder.Decode(&details, data)
 		if err == nil {
 			theEMail, theCode := getEMailAddress(details.Username)
-			theEMail = "bowpa1335@gmail.com"
 			if len(theEMail) > 0 {
 				mail.SendReset(theEMail, theCode)
 			}

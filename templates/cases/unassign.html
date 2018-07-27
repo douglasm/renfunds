@@ -17,6 +17,9 @@
     <div class="grid_12">
         <div class="row">
             <div class="grid_9">
+                {{if .NavButtons.HasNav}}
+                    <p>{{template "navbuttons.html" .NavButtons}}</p>
+                {{end}}
                 <table>
                     <thead>
                         <th>Case</th>
@@ -36,8 +39,10 @@
                         </tr>
                         {{end}}
                     </tbody>
-                    
                 </table>
+                {{if .NavButtons.HasNav}}
+                    <p>{{template "navbuttons.html" .NavButtons}}</p>
+                {{end}}
             </div> <!-- end of grid_9 -->
             {{template "cases/casesearch.html" .}}
         </div> <!-- end of row -->

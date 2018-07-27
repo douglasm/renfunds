@@ -50,12 +50,6 @@
                 {{template "rowitem.html" .Details.Opened}}
                 {{template "rowitem.html" .Details.Updated}}
                 {{template "rowitem.html" .Details.State}}
-                            <!-- <th>Remaining</th> -->
-                            <!-- <th>Invoice</th> -->
-                            <!-- <th>Updated</th> -->
-                                    <!-- <td>{ {$element.Remaining}}</td> -->
-                                    <!-- <td>{ {$element.Invoice}}</td> -->
-                                    <!-- <td>{ {$element.Updated}}</td> -->
                 {{if .Details.HasVoucher}}
                     <hr />
                     <h6><strong>Vouchers</strong></h6>
@@ -104,7 +98,7 @@
                                 <td>{{$element.Date}}</td>
                                 <td>{{$element.Comment}}</td>
                                 <td>{{$element.Name}}</td>
-                                <td><a href="">Edit</a></td>
+                                <td><a href="/casecomment/{{$element.Item}}/{{$element.Num}}">Edit</a></td>
                             </tr>
                         {{end}}
                     </tbody>

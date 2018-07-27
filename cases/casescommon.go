@@ -1,6 +1,7 @@
 package cases
 
 import (
+	"encoding/hex"
 	"errors"
 	"html/template"
 	// "fmt"
@@ -63,6 +64,15 @@ type (
 		Comment string `schema:"comment"`
 		Commit  string `schema:"commit"`
 	}
+
+	commentEdit struct {
+		ID      int    `schema:"id"`
+		Message string `schema:"-"`
+		Link    string `schema:"-"`
+		Comment string `schema:"comment"`
+		Num     int    `schema:"num"`
+		Commit  string `schema:"commit"`
+	}
 )
 
 var (
@@ -82,13 +92,13 @@ func SetKey(theKey []byte) {
 func SetRoutes(app *iris.Application) {
 	app.Get("/case/{casenum:int}", showCase)
 	app.Get("/cases", listCases)
-	app.Get("/cases/{page:int}", listCases)
+	app.Get("/cases/{pagenum:int}", listCases)
 	app.Get("/casesopen", openCases)
-	app.Get("/casesopen/{page:int}", openCases)
+	app.Get("/casesopen/{pagenum:int}", openCases)
 	app.Get("/casesunassign", unassignedCases)
-	app.Get("/casesunassign/{page:int}", unassignedCases)
+	app.Get("/casesunassign/{pagenum:int}", unassignedCases)
 	app.Get("/casesinactive", inactiveCases)
-	app.Get("/casesinactive/{page:int}", inactiveCases)
+	app.Get("/casesinactive/{pagenum:int}", inactiveCases)
 
 	app.Get("/caseclosed/{casenum:int}", closeCase)
 	app.Get("/caseopened/{casenum:int}", openCase)
@@ -104,11 +114,16 @@ func SetRoutes(app *iris.Application) {
 	app.Post("/searchcase", searchCase)
 
 	app.Post("/commentcase/{casenum:int}", addComment)
+
+	app.Get("/casecomment/{casenum:int}/{commentnum:int}", editComment)
+	app.Post("/casecomment/{casenum:int}/{commentnum:int}", editComment)
 }
 
-func (cd *CommentDisplay) GetCommentDisplay(comment db.Comment) {
+func (cd *CommentDisplay) GetCommentDisplay(comment db.Comment, caseNum int) {
 	cd.Date = utils.DateToString(comment.Date)
 	cd.Comment = template.HTML(crypto.Decrypt(comment.Comment))
+	cd.Item = caseNum
+	cd.Num = comment.Num
 
 	theStr := ""
 	if comment.User != 0 {
@@ -130,4 +145,17 @@ func getClientName(clientNum int) string {
 
 	clientColl.FindId(clientNum).One(&theClient)
 	return crypto.Decrypt(theClient.First) + " " + crypto.Decrypt(theClient.Surname)
+}
+
+func decodeComment(theComment string) string {
+	looping := true
+	for looping {
+		_, err := hex.DecodeString(theComment)
+		if err != nil {
+			looping = false
+		} else {
+			theComment = crypto.Decrypt(theComment)
+		}
+	}
+	return theComment
 }

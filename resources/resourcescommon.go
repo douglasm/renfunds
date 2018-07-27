@@ -72,4 +72,5 @@ func SetRoutes(app *iris.Application) {
 	app.Post("/resourceedit/{resourcenum:int}", resourceEdit)
 	app.Get("/resourcedelete/{resourcenum:int}", resourceDelete)
 	app.Get("/resourceremove/{resourcenum:int}", resourceRemove)
+	app.Post("/resourcesearch", resourceSearch)
 }
