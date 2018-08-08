@@ -274,6 +274,7 @@ func showClient(ctx iris.Context) {
 	header.Admin = theSession.(users.Session).Admin
 
 	decryptClient(&theClient)
+
 	details.ID = theClient.ID
 	details.First = theClient.First
 	details.Surname = theClient.Surname
@@ -334,6 +335,7 @@ func addComment(ctx iris.Context) {
 
 	decoder.Decode(&newComment, ctx.FormValues())
 
+	newComment.Comment = strings.TrimSpace(newComment.Comment)
 	if len(newComment.Comment) < 1 {
 		ctx.Redirect(fmt.Sprintf("/client/%d", clientNum), http.StatusFound)
 		return
@@ -448,6 +450,12 @@ func editComment(ctx iris.Context) {
 
 		err = clientColl.FindId(clientNum).One(&theClient)
 		if err != nil {
+			theUrl := fmt.Sprintf("/client/%d", clientNum)
+			ctx.Redirect(theUrl, http.StatusFound)
+			return
+		}
+
+		if len(details.Comment) == 0 {
 			theUrl := fmt.Sprintf("/client/%d", clientNum)
 			ctx.Redirect(theUrl, http.StatusFound)
 			return
@@ -652,6 +660,9 @@ func checkComments(comments []db.Comment, clientNum int) []db.Comment {
 	)
 	for _, item := range comments {
 		theStr := item.Comment
+		if len(theStr) == 0 {
+			continue
+		}
 		looping := true
 		for looping {
 			_, err := hex.DecodeString(theStr)

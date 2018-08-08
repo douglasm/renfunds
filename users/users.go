@@ -45,6 +45,7 @@ type (
 		Phone       string        `schema:"phone"`
 		Mobile      string        `schema:"mobile"`
 		Admin       bool          `schema:"-"`
+		ShowAll     bool          `schema:"-"`
 		AdminStr    string        `schema:"admin"`
 		Commit      string        `schema:"commit"`
 	}
@@ -223,20 +224,22 @@ func showUser(ctx iris.Context) {
 		return
 	}
 
-	details.ID = userNum
-	details.First = crypto.Decrypt(theUser.First)
-	details.Surname = crypto.Decrypt(theUser.Surname)
-	details.Position = theUser.Position
-	details.Based = theUser.Based
-	details.EMail = crypto.Decrypt(theUser.EMail)
-	details.Address = crypto.Decrypt(theUser.Address)
-	details.AddressHTML = template.HTML(strings.Replace(details.Address, "\r", "<br />", -1))
-	details.PostCode = crypto.Decrypt(theUser.PostCode)
-	details.Phone = crypto.Decrypt(theUser.Phone)
-	details.Mobile = crypto.Decrypt(theUser.Mobile)
-	details.Admin = theUser.Admin
+	/*	details.ID = userNum
+		details.First = crypto.Decrypt(theUser.First)
+		details.Surname = crypto.Decrypt(theUser.Surname)
+		details.Position = theUser.Position
+		details.Based = theUser.Based
+		details.EMail = crypto.Decrypt(theUser.EMail)
+		details.Address = crypto.Decrypt(theUser.Address)
+		details.AddressHTML = template.HTML(strings.Replace(details.Address, "\r", "<br />", -1))
+		details.PostCode = crypto.Decrypt(theUser.PostCode)
+		details.Phone = crypto.Decrypt(theUser.Phone)
+		details.Mobile = crypto.Decrypt(theUser.Mobile)
+		details.Admin = theUser.Admin
+		details.ShowAll = true
 
-	details.Name = strings.TrimSpace(details.First + " " + details.Surname)
+		details.Name = strings.TrimSpace(details.First + " " + details.Surname)*/
+	details.fillEditRec(theUser, true)
 
 	header.Title = "User " + details.Name
 	header.Loggedin = theSession.(Session).LoggedIn
@@ -244,6 +247,41 @@ func showUser(ctx iris.Context) {
 
 	ctx.ViewData("Header", header)
 	ctx.ViewData("Details", details)
+	ctx.View("usershow.html")
+}
+
+func myDetails(ctx iris.Context) {
+	var (
+		details editRec
+		theUser db.User
+		header  types.HeaderRecord
+	)
+
+	theSession := ctx.Values().Get("session")
+	if !theSession.(Session).LoggedIn {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	userNumber := theSession.(Session).UserNumber
+	session := db.MongoSession.Copy()
+	defer session.Close()
+
+	usersCollection := session.DB(db.MainDB).C(db.CollectionUsers)
+	err := usersCollection.FindId(userNumber).One(&theUser)
+	if err != nil {
+		ctx.Redirect("/clients", http.StatusFound)
+		return
+	}
+
+	details.fillEditRec(theUser, false)
+
+	header.Title = "RF: Your details"
+	header.Loggedin = theSession.(Session).LoggedIn
+	header.Admin = theSession.(Session).Admin
+
+	ctx.ViewData("Details", details)
+	ctx.ViewData("Header", header)
 	ctx.View("usershow.html")
 }
 
@@ -329,6 +367,79 @@ func activateUser(ctx iris.Context) {
 	ctx.ViewData("Details", details)
 	ctx.ViewData("ErrorMessage", errorMessage)
 	ctx.View(theTemplate)
+}
+
+func changePassword(ctx iris.Context) {
+	var (
+		theUser      db.User
+		details      changePass
+		errorMessage string
+		err          error
+	)
+
+	theSession := ctx.Values().Get("session")
+	if !theSession.(Session).LoggedIn {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	userNumber := theSession.(Session).UserNumber
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+
+	usersCollection := session.DB(db.MainDB).C(db.CollectionUsers)
+	err = usersCollection.FindId(userNumber).One(&theUser)
+	if err != nil {
+		ctx.Redirect("/clients", http.StatusFound)
+		return
+	}
+
+	switch ctx.Method() {
+	case http.MethodGet:
+
+	case http.MethodPost:
+		data := ctx.FormValues()
+		err = decoder.Decode(&details, data)
+		if err == nil {
+			err = verifyPassword(details.Password, theUser)
+			if err != nil {
+				errorMessage = err.Error()
+				break
+			}
+
+			if details.Pass1 != details.Pass2 {
+				errorMessage = errPassMismatch.Error()
+				break
+			}
+
+			if !checkPasswordLen(details.Pass1) {
+				errorMessage = errPassShort.Error()
+				break
+			}
+			_, err = CheckPasswordSafe(details.Pass1)
+			if err != nil {
+				errorMessage = err.Error()
+				break
+			}
+		}
+		setNewPassword(userNumber, details.Pass1, false)
+		ctx.Redirect("/me", http.StatusFound)
+		return
+	}
+
+	details.Number = theSession.(Session).UserNumber
+	details.Checkfield = crypto.MakeNonce(kChangeForm, theUser.Username)
+
+	header := types.HeaderRecord{Title: "RF: Change your password"}
+	header.Loggedin = theSession.(Session).LoggedIn
+	header.Admin = theSession.(Session).Admin
+	header.Scripts = append(header.Scripts, "passwordtoggle")
+
+	ctx.ViewData("Details", details)
+	ctx.ViewData("Header", header)
+	ctx.ViewData("ErrorMessage", errorMessage)
+	ctx.View("users/changepass.html")
 }
 
 func (er editRec) save() {
@@ -491,4 +602,22 @@ func checkPasswordLen(password string) bool {
 		}
 	}
 	return false
+}
+
+func (dr *editRec) fillEditRec(theUser db.User, showAll bool) {
+	dr.ID = theUser.ID
+	dr.First = crypto.Decrypt(theUser.First)
+	dr.Surname = crypto.Decrypt(theUser.Surname)
+	dr.Position = theUser.Position
+	dr.Based = theUser.Based
+	dr.EMail = crypto.Decrypt(theUser.EMail)
+	dr.Address = crypto.Decrypt(theUser.Address)
+	dr.AddressHTML = template.HTML(strings.Replace(dr.Address, "\r", "<br />", -1))
+	dr.PostCode = crypto.Decrypt(theUser.PostCode)
+	dr.Phone = crypto.Decrypt(theUser.Phone)
+	dr.Mobile = crypto.Decrypt(theUser.Mobile)
+	dr.Admin = theUser.Admin
+	dr.ShowAll = showAll
+	dr.Name = strings.TrimSpace(dr.First + " " + dr.Surname)
+
 }

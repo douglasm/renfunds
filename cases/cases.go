@@ -369,10 +369,10 @@ func unassignedCases(ctx iris.Context) {
 		details []CaseList
 		// theCase db.Case
 		// theClient db.Client
-		header  types.HeaderRecord
+		header     types.HeaderRecord
 		navButtons types.NavButtonRecord
-		pageNum int
-		err     error
+		pageNum    int
+		err        error
 	)
 
 	pageNum, err = ctx.Params().GetInt("pagenum")
@@ -403,10 +403,10 @@ func inactiveCases(ctx iris.Context) {
 		details []CaseList
 		// theCase db.Case
 		// theClient db.Client
-		header  types.HeaderRecord
+		header     types.HeaderRecord
 		navButtons types.NavButtonRecord
-		pageNum int
-		err     error
+		pageNum    int
+		err        error
 	)
 
 	pageNum, err = ctx.Params().GetInt("pagenum")
@@ -764,6 +764,12 @@ func editComment(ctx iris.Context) {
 			return
 		}
 
+		if len(details.Comment) == 0 {
+			theUrl := fmt.Sprintf("/case/%d", caseNum)
+			ctx.Redirect(theUrl, http.StatusFound)
+			return
+		}
+
 		newComments := []db.Comment{}
 		for _, item := range theCase.Comments {
 			if item.Num == commentNum {
@@ -990,6 +996,9 @@ func checkComments(comments []db.Comment, caseNum int) []db.Comment {
 	)
 	for _, item := range comments {
 		theStr := item.Comment
+		if len(item.Comment) == 0 {
+			continue
+		}
 		looping := true
 		for looping {
 			_, err := hex.DecodeString(theStr)
@@ -1005,7 +1014,9 @@ func checkComments(comments []db.Comment, caseNum int) []db.Comment {
 	}
 	for i, item := range tempComments {
 		item.Num = i + 1
-		item.Comment = crypto.Encrypt(item.Comment)
+		if len(item.Comment) > 0 {
+			item.Comment = crypto.Encrypt(item.Comment)
+		}
 		newComments = append(newComments, item)
 	}
 	if len(newComments) != 0 {

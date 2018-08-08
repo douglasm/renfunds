@@ -26,36 +26,38 @@
                 </div>
             </div>
         </div> <!-- end of row -->
-        <div class="row">
-            <div class="grid_10">
-                <div class="grid_2">
-                    <strong>Position:</strong>
+        {{if .Details.ShowAll}}
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Position:</strong>
+                    </div>
+                    <div class="grid_7">
+                        {{.Details.Position}}
+                    </div>
                 </div>
-                <div class="grid_7">
-                    {{.Details.Position}}
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Based:</strong>
+                    </div>
+                    <div class="grid_7">
+                        {{.Details.Based}}
+                    </div>
                 </div>
-            </div>
-        </div> <!-- end of row -->
-        <div class="row">
-            <div class="grid_10">
-                <div class="grid_2">
-                    <strong>Based:</strong>
+            </div> <!-- end of row -->
+            <div class="row">
+                <div class="grid_10">
+                    <div class="grid_2">
+                        <strong>Admin access:</strong>
+                    </div>
+                    <div class="grid_7">
+                        {{if .Details.Admin}}Yes{{else}}No{{end}}
+                    </div>
                 </div>
-                <div class="grid_7">
-                    {{.Details.Based}}
-                </div>
-            </div>
-        </div> <!-- end of row -->
-        <div class="row">
-            <div class="grid_10">
-                <div class="grid_2">
-                    <strong>Admin access:</strong>
-                </div>
-                <div class="grid_7">
-                    {{if .Details.Admin}}Yes{{else}}No{{end}}
-                </div>
-            </div>
-        </div> <!-- end of row -->
+            </div> <!-- end of row -->
+        {{end}}
         <div class="row">
             <div class="grid_10">
                 <div class="grid_2">
@@ -112,7 +114,11 @@
                 </div>
                 <div class="grid_7">
                     <div class="button-group">
-                        <a href="/useredit/{{.Details.ID}}" class="button">Edit</a>
+                        {{if .Details.ShowAll}}
+                            <a href="/useredit/{{.Details.ID}}" class="button">Edit</a>
+                        {{else}}
+                            <a href="/changepassword" class="button">Change password</a>
+                        {{end}}
                     </div>
                 </div>
             </div>

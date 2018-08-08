@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	// "fmt"
+	"html/template"
 
 	"github.com/globalsign/mgo/bson"
 	"github.com/gorilla/schema"
@@ -17,6 +18,7 @@ import (
 const (
 	kLoginForm = 150 + iota
 	kResetForm
+	kChangeForm
 	kActivateForm
 
 	KActivateLength = 12
@@ -43,11 +45,30 @@ type (
 		Commit     string `schema:"commit"`
 	}
 
+	changePass struct {
+		Password   string `schema:"code"`
+		Pass1      string `schema:"pwd0"`
+		Pass2      string `schema:"pwd1"`
+		Number     int    `schema:"num"`
+		Checkfield string `schema:"checkfield"`
+		Commit     string `schema:"commit"`
+	}
+
 	Session struct {
 		ID         string `bson:"_id"`
 		UserNumber int    `bson:"usernum"`
 		LoggedIn   bool   `bson:"logged,omitempty"`
 		Admin      bool   `bson:"admin,omitempty"`
+	}
+
+	userDetails struct {
+		First    string
+		Surname  string
+		Address  template.HTML
+		PostCode template.HTML
+		Phone    template.HTML
+		Mobile   template.HTML
+		EMail    template.HTML
 	}
 
 	userChoice struct {
@@ -67,6 +88,7 @@ var (
 	errPassMismatch = errors.New("The two passwords do not match")
 	errPassUsed     = errors.New("That password has been revealed in a data breach")
 	errPassShort    = errors.New("The password is not long enough")
+	errPassBad      = errors.New("Incorrect password")
 )
 
 func SetRoutes(app *iris.Application) {
@@ -84,6 +106,11 @@ func SetRoutes(app *iris.Application) {
 	app.Post("/activate", activateUser)
 	app.Get("/activate/{code}", activateUser)
 	app.Post("/activate/{code}", activateUser)
+
+	app.Get("/me", myDetails)
+
+	app.Get("/changepassword", changePassword)
+	app.Post("/changepassword", changePassword)
 
 	app.Get("/resetpassword", resetPassword)
 	app.Post("/resetpassword", resetPassword)

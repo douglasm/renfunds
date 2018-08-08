@@ -1,6 +1,7 @@
 package users
 
 import (
+	// "fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -119,6 +120,7 @@ func resetPassword(ctx iris.Context) {
 			if len(theEMail) > 0 {
 				mail.SendReset(theEMail, theCode)
 			}
+
 			ctx.Redirect("/resetsent", http.StatusFound)
 			return
 		}
@@ -285,4 +287,22 @@ func createCookie(userNum int, admin bool, remember bool) http.Cookie {
 	theSession.LoggedIn = true
 	err = sessionCollection.Insert(&theSession)
 	return theCookie
+}
+
+func verifyPassword(currentPassword string, theUser db.User) error {
+	thePassword, err := crypto.GetHash(currentPassword, theUser.Salt)
+	if err != nil {
+		return err
+	}
+	if len(thePassword) == len(theUser.Password) {
+		for i := 0; i < len(thePassword); i++ {
+			if thePassword[i] != theUser.Password[i] {
+				return errPassBad
+			}
+		}
+		if theUser.InActive {
+			return errPassBad
+		}
+	}
+	return nil
 }

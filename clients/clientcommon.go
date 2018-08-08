@@ -50,21 +50,6 @@ var (
 	errorRenfundsUsed     = errors.New("That RENfunds number is used elsewhere")
 )
 
-// func init() {
-// 	dayNum := 2001*1000 + 1*50 + 16
-
-// 	d, m, y := dateToDMY(dayNum)
-// 	if d != 16 {
-// 		fmt.Println("day bad", d)
-// 	}
-// 	if m != 1 {
-// 		fmt.Println("day bad", m)
-// 	}
-// 	if y != 2001 {
-// 		fmt.Println("year bad", y)
-// 	}
-// }
-
 func SetRoutes(app *iris.Application) {
 	app.Get("/client/{clientnum:int}", showClient)
 	app.Get("/clients", ListClients)
@@ -87,7 +72,6 @@ func ReOrder() {
 
 	// num, err := clientColl.Find(nil).Count()
 
-	// fmt.Println("There are", num, err)
 }
 
 func orderNames() {
