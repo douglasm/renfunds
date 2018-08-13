@@ -131,6 +131,96 @@ func adminPerson(ctx iris.Context) {
 	ctx.View("adminmanage.html")
 }
 
+func adminReset(ctx iris.Context) {
+	var (
+		header        types.HeaderRecord
+		result        db.User
+		allPersonnel  []managePerson
+		columnHeaders []types.SortItem
+		colNames      = []string{"First", "Surname", "Code", "E Mail", "Link", "User name"}
+	)
+
+	theSession := ctx.Values().Get("session")
+	if !theSession.(users.Session).Admin {
+		ctx.Redirect("/clients", http.StatusFound)
+	}
+
+	sortNum, err := ctx.Params().GetInt("sortnum")
+	if err != nil {
+		sortNum = 2
+	}
+
+	if sortNum == 0 {
+		sortNum = 2
+	}
+
+	for i, item := range colNames {
+		newHeader := types.SortItem{}
+		newHeader.Title = item
+
+		newHeader.Link = fmt.Sprintf("/adminperson/%d", i+1)
+		if sortNum == i+1 {
+			newHeader.Sortable = false
+		} else {
+			newHeader.Sortable = true
+		}
+		columnHeaders = append(columnHeaders, newHeader)
+	}
+	session := db.MongoSession.Copy()
+	defer session.Close()
+	userColl := session.DB(db.MainDB).C(db.CollectionUsers)
+
+	query := bson.M{db.KFieldUserActivateCode: bson.M{"$exists": 1}}
+	iter := userColl.Find(query).Iter()
+	if iter.Err() != nil {
+		log.Println("Error: adminPerson iter", iter.Err())
+	}
+	for iter.Next(&result) {
+		if result.InActive {
+			continue
+		}
+		newPerson := managePerson{}
+		newPerson.ID = result.ID
+		newPerson.First = crypto.Decrypt(result.First)
+		newPerson.Surname = crypto.Decrypt(result.Surname)
+		newPerson.Role = result.ActivateCode
+		newPerson.Based = crypto.Decrypt(result.EMail)
+		newPerson.UserName = result.Username
+		newPerson.AdminLink = fmt.Sprintf("/adminswap/%d/%d", newPerson.ID, sortNum)
+		if result.InActive {
+			newPerson.ActiveStr = "No"
+		} else {
+			newPerson.ActiveStr = "Yes"
+		}
+		newPerson.ActiveLink = fmt.Sprintf("/activeswap/%d/%d", newPerson.ID, sortNum)
+		allPersonnel = append(allPersonnel, newPerson)
+	}
+
+	switch sortNum {
+	case 1:
+		sort.Sort(ByFirst{allPersonnel})
+	case 2:
+		sort.Sort(BySurname{allPersonnel})
+	case 3:
+		sort.Sort(ByRole{allPersonnel})
+	case 4:
+		sort.Sort(ByAdmin{allPersonnel})
+	case 5:
+		sort.Sort(ByBased{allPersonnel})
+	case 6:
+		sort.Sort(ByActive{allPersonnel})
+	}
+
+	header.Title = "RF: Admin"
+	header.Loggedin = theSession.(users.Session).LoggedIn
+	header.Admin = theSession.(users.Session).Admin
+
+	ctx.ViewData("Header", header)
+	ctx.ViewData("ColHeaders", columnHeaders)
+	ctx.ViewData("Details", allPersonnel)
+	ctx.View("adminreset.html")
+}
+
 func adminSwap(ctx iris.Context) {
 	var (
 		theUser db.User

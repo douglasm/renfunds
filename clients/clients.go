@@ -575,6 +575,7 @@ func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool
 		theList   []ClientShow
 		skip      int
 		limit     int
+		fromStart bool
 	)
 
 	session := db.MongoSession.Copy()
@@ -586,6 +587,10 @@ func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool
 		limit = types.KListLimit + 1
 	} else {
 		limit = 100000
+		if searchTerm[:1] == "^" {
+			searchTerm = searchTerm[1:]
+			fromStart = true
+		}
 	}
 	found := 0
 	iter := clientColl.Find(nil).Skip(skip).Limit(limit).Sort(db.KFieldClientsOrder).Iter()
@@ -593,11 +598,22 @@ func GetList(searchCategory, searchTerm string, pageNum int) ([]ClientShow, bool
 		decryptClient(&theClient)
 		if searchTerm != "" {
 			isValid := false
-			if strings.Contains(strings.ToLower(theClient.First), searchTerm) {
-				isValid = true
-			}
-			if strings.Contains(strings.ToLower(theClient.Surname), searchTerm) {
-				isValid = true
+			if fromStart {
+				val := strings.Index(strings.ToLower(theClient.First), searchTerm)
+				if val == 0 {
+					isValid = true
+				}
+				val = strings.Index(strings.ToLower(theClient.Surname), searchTerm)
+				if val == 0 {
+					isValid = true
+				}
+			} else {
+				if strings.Contains(strings.ToLower(theClient.First), searchTerm) {
+					isValid = true
+				}
+				if strings.Contains(strings.ToLower(theClient.Surname), searchTerm) {
+					isValid = true
+				}
 			}
 			if !isValid {
 				continue

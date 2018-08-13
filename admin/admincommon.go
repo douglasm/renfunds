@@ -82,6 +82,7 @@ func SetRoutes(app *iris.Application) {
 	app.Get("/adminperson/{sortnum:int}", adminPerson)
 	app.Get("/adminpersonadd", adminAddPerson)
 	app.Post("/adminpersonadd", adminAddPerson)
+	app.Get("/adminpersonreset", adminReset)
 
 	app.Get("/adminswap/{usernum:int}/{sortnum:int}", adminSwap)
 	app.Get("/activeswap/{usernum:int}/{sortnum:int}", activeSwap)

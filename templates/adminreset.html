@@ -1,0 +1,36 @@
+{{template "header.html" .Header}}
+
+<body>
+{{template "navbar.html" .}}
+
+<div class="row">
+    <div class="grid_12">
+        <h5>Personnel who have requested a reset password</h5>
+        <table>
+            <thead>
+                {{range $elem := .ColHeaders}}
+                    {{if $elem.Sortable}}
+                        <th><a href="{{$elem.Link}}">{{$elem.Title}}</a></th>
+                    {{else}}
+                        <th>{{$elem.Title}}</th>
+                    {{end}}
+                {{end}}
+            </thead>
+            <tbody>
+                {{range $elem := .Details}}
+                <tr>
+                    <td>{{$elem.First}}</td>
+                    <td><a href="/user/{{$elem.ID}}">{{$elem.Surname}}</a></td>
+                    <td>{{$elem.Role}}</td>
+                    <td>{{$elem.Based}}</td>
+                    <td>https://renfunds.barcodeprograms.co.uk/reset/{{$elem.Role}}</td>
+                    <td>{{$elem.UserName}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div> <!-- end of grid_12 -->
+</div> <!-- end of row -->
+
+</body>
+</html>
