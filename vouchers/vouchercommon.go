@@ -61,6 +61,8 @@ func SetRoutes(app *iris.Application) {
 	app.Post("/vouchereditcase/{vouchernum:int}", editCaseVoucher)
 	app.Get("/voucheredit/{vouchernum:int}", voucherEdit)
 	app.Post("/voucheredit/{vouchernum:int}", voucherEdit)
+	app.Get("/voucherdelete/{vouchernum:int}", voucherDelete)
+	app.Get("/voucherremove/{vouchernum:int}", voucherRemove)
 }
 
 func getClientName(clientNum int) string {

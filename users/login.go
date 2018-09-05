@@ -67,7 +67,7 @@ func login(ctx iris.Context) {
 						}
 
 						if !failed {
-							theCookie := createCookie(theUser.ID, theUser.Admin, details.Remember)
+							theCookie := CreateCookie(theUser.ID, theUser.Admin, details.Remember)
 							ctx.SetCookie(&theCookie)
 							ctx.Redirect("/", http.StatusFound)
 							cookie.MakeCookie(ctx)
@@ -197,7 +197,7 @@ func resetHandler(ctx iris.Context) {
 		_, err = CheckPassword(details.Pass1, details.Pass2)
 		if err == nil {
 			setNewPassword(theUser.ID, details.Pass1, false)
-			theCookie := createCookie(theUser.ID, theUser.Admin, false)
+			theCookie := CreateCookie(theUser.ID, theUser.Admin, false)
 			ctx.SetCookie(&theCookie)
 			ctx.Redirect("/", http.StatusFound)
 			return
@@ -259,7 +259,7 @@ func getEMailAddress(name string) (string, string) {
 	return retVal, theCode
 }
 
-func createCookie(userNum int, admin bool, remember bool) http.Cookie {
+func CreateCookie(userNum int, admin bool, remember bool) http.Cookie {
 	var (
 		theSession   Session
 		cookieString string

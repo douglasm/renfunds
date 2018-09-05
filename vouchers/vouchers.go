@@ -384,6 +384,104 @@ func voucherEdit(ctx iris.Context) {
 	ctx.View("vouchers/edit.html")
 }
 
+func voucherDelete(ctx iris.Context) {
+	var (
+		header     types.HeaderRecord
+		details    voucherShow
+		theVoucher db.Voucher
+		theCase    db.Case
+		voucherNum int
+		err        error
+	)
+
+	theSession := ctx.Values().Get("session")
+	if !theSession.(users.Session).LoggedIn {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	if !theSession.(users.Session).Admin {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	voucherNum, err = ctx.Params().GetInt("vouchernum")
+	if err != nil {
+		ctx.Redirect("/vouchers", http.StatusFound)
+		return
+	}
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+
+	voucherColl := session.DB(db.MainDB).C(db.CollectionVouchers)
+	caseColl := session.DB(db.MainDB).C(db.CollectionCases)
+
+	voucherColl.FindId(voucherNum).One(&theVoucher)
+	caseColl.FindId(theVoucher.CaseID).One(&theCase)
+
+	details.ID = theVoucher.ID
+	details.CaseID = theVoucher.CaseID
+	details.Establishment = theVoucher.Establishment
+	details.RENNumber = theCase.RENNumber
+	details.Client = getClientName(theVoucher.ClientID)
+	details.ClientID = theVoucher.ClientID
+	details.Date = utils.GetDateAndTime(theVoucher.Issued, false)
+	details.Updated = utils.GetDateAndTime(theVoucher.Updated, false)
+	details.CaseWorker = users.GetUserName(theVoucher.UserIssuing)
+
+	details.Amount = "£" + utils.IntToString(theVoucher.Amount, 2)
+	if theVoucher.InvoiceReceived {
+		details.Invoice = "Yes"
+	} else {
+		details.Invoice = "No"
+	}
+	details.Remains = "£" + utils.IntToString(theVoucher.Remaining, 2)
+
+	header.Title = "RF: PV " + details.RENNumber
+
+	header.Loggedin = theSession.(users.Session).LoggedIn
+	header.Admin = theSession.(users.Session).Admin
+	header.Title = "RF: Delete PV " + details.RENNumber
+
+	details.ID = voucherNum
+	ctx.ViewData("Header", header)
+	ctx.ViewData("Details", details)
+	ctx.View("vouchers/delete.html")
+}
+
+func voucherRemove(ctx iris.Context) {
+	var (
+		voucherNum int
+		err        error
+	)
+
+	theSession := ctx.Values().Get("session")
+	if !theSession.(users.Session).LoggedIn {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	if !theSession.(users.Session).Admin {
+		ctx.Redirect("/", http.StatusFound)
+		return
+	}
+
+	voucherNum, err = ctx.Params().GetInt("vouchernum")
+	if err != nil {
+		ctx.Redirect("/vouchers", http.StatusFound)
+		return
+	}
+
+	session := db.MongoSession.Copy()
+	defer session.Close()
+
+	voucherColl := session.DB(db.MainDB).C(db.CollectionVouchers)
+
+	voucherColl.RemoveId(voucherNum)
+	ctx.Redirect("/vouchers", http.StatusFound)
+}
+
 func getVouchers(pageNum int) ([]voucherShow, bool) {
 	var (
 		theVoucher db.Voucher
